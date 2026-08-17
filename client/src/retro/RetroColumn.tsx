@@ -4,9 +4,9 @@ import type { RetroCard as RetroCardType, RetroColumnId } from '@grooming-kit/sh
 import { RetroCard } from './RetroCard';
 
 const COLUMN_LABELS: Record<RetroColumnId, string> = {
-  start: 'Start',
-  stop: 'Stop',
-  continue: 'Continue',
+  start: 'What went well',
+  stop: "What didn't go well",
+  continue: 'Things to improve',
 };
 
 interface RetroColumnProps {
