@@ -46,6 +46,15 @@ export function RetroSandbox() {
     },
     retroClose: (actionItems: string[]) =>
       setRetroState((prev) => ({ ...prev, closed: true, actionItems })),
+    renameParticipant: async (displayName: string) => {
+      setRetroState((prev) => ({
+        ...prev,
+        participants: prev.participants.map((p) =>
+          p.id === MOCK_PARTICIPANT_ID ? { ...p, displayName } : p
+        ),
+      }));
+      return { ok: true, displayName };
+    },
   };
 
   function resetDemo(): void {

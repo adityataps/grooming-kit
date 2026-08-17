@@ -161,6 +161,35 @@ export function registerSocketHandlers(
     }
   });
 
+  socket.on('participant:rename', (payload, callback) => {
+    const { roomCode, participantId } = socket.data;
+    if (!roomCode || !participantId) {
+      callback({ ok: false, code: 'ROOM_NOT_FOUND', message: 'You are not currently in a room.' });
+      return;
+    }
+
+    const room = roomManager.getRoom(roomCode);
+    if (!room) {
+      callback({ ok: false, code: 'ROOM_NOT_FOUND', message: `Room ${roomCode} was not found.` });
+      return;
+    }
+
+    const displayName = sanitizeDisplayName(payload.displayName);
+    if (!displayName) {
+      callback({ ok: false, code: 'INVALID_ACTION', message: 'Display name is required.' });
+      return;
+    }
+
+    const uniqueDisplayName = dedupeDisplayName(
+      displayName,
+      room.listDisplayNames(participantId)
+    );
+    room.renameParticipant(participantId, uniqueDisplayName);
+
+    callback({ ok: true, displayName: uniqueDisplayName });
+    broadcastState(io, room);
+  });
+
   socket.on('disconnect', () => {
     const { roomCode, participantId } = socket.data;
     if (!roomCode || !participantId) return;

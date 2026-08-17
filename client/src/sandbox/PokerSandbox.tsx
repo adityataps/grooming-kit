@@ -26,6 +26,15 @@ export function PokerSandbox() {
         revealed: false,
         votes: prev.votes.map((v) => ({ ...v, card: null, hasVoted: false })),
       })),
+    renameParticipant: async (displayName: string) => {
+      setPokerState((prev) => ({
+        ...prev,
+        participants: prev.participants.map((p) =>
+          p.id === MOCK_PARTICIPANT_ID ? { ...p, displayName } : p
+        ),
+      }));
+      return { ok: true, displayName };
+    },
     retroAddCard: () => {},
     retroVote: () => {},
     retroClose: () => {},

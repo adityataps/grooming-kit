@@ -89,9 +89,20 @@ export abstract class RoomBase {
     );
   }
 
-  /** Public: current display names in the room, used to de-duplicate a new joiner's name. */
-  listDisplayNames(): string[] {
-    return Array.from(this.participants.values()).map((p) => p.displayName);
+  /** Public: current display names in the room, used to de-duplicate a new joiner's name.
+   *  Optionally excludes one participant (e.g. the one being renamed) from the check. */
+  listDisplayNames(excludeParticipantId?: string): string[] {
+    return Array.from(this.participants.values())
+      .filter((p) => p.id !== excludeParticipantId)
+      .map((p) => p.displayName);
+  }
+
+  /** Renames an existing participant. Returns false if the participant isn't found. */
+  renameParticipant(participantId: string, displayName: string): boolean {
+    const record = this.participants.get(participantId);
+    if (!record) return false;
+    record.displayName = displayName;
+    return true;
   }
 
   abstract toState(): RoomState;

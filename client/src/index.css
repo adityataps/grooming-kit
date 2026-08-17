@@ -337,6 +337,43 @@ aside {
   font-size: 0.8rem;
 }
 
+.participant-list .rename-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  font-size: 0.8rem;
+  line-height: 1;
+  opacity: 0.6;
+  transition: opacity 0.15s ease;
+}
+
+.participant-list .rename-button:hover {
+  opacity: 1;
+}
+
+.participant-list .rename-form {
+  flex: 1;
+  min-width: 0;
+}
+
+.participant-list .rename-input {
+  width: 100%;
+  max-width: 12rem;
+  font: inherit;
+  padding: 0.1rem 0.4rem;
+  border-radius: 4px;
+  border: 1px solid var(--accent);
+  background: var(--surface);
+  color: inherit;
+}
+
+.participant-list .rename-error {
+  color: var(--danger);
+  font-size: 0.75rem;
+  flex-basis: 100%;
+}
+
 .vote-progress {
   color: var(--muted);
   font-size: 0.85rem;

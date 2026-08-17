@@ -41,6 +41,12 @@ export interface JoinRoomAck {
 
 export type ErrorAck = { ok: false } & ErrorPayload;
 
+export interface RenameAck {
+  ok: true;
+  /** The name actually applied — may differ from what was requested if de-duplicated. */
+  displayName: string;
+}
+
 /** Server → client events: state/facts broadcast by the authoritative server. */
 export interface ServerToClientEvents {
   'room:state': (state: RoomState) => void;
@@ -59,6 +65,10 @@ export interface ClientToServerEvents {
     callback: (ack: JoinRoomAck | ErrorAck) => void
   ) => void;
   'room:leave': () => void;
+  'participant:rename': (
+    payload: { displayName: string },
+    callback: (ack: RenameAck | ErrorAck) => void
+  ) => void;
   'poker:vote': (payload: { card: PokerCard }) => void;
   'poker:reveal': () => void;
   'poker:reset': () => void;

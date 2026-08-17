@@ -21,6 +21,7 @@ export function mockRoomContextBase(participantId: string): Omit<
       // eslint-disable-next-line no-console
       console.info('[sandbox] leaveRoom (no-op)');
     },
+    renameParticipant: async (displayName: string) => ({ ok: true, displayName }),
     dismissError: () => {},
     dismissClosed: () => {},
   };

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import type { RetroRoomState } from '@grooming-kit/shared';
 import { useRoom } from '../state/RoomContext';
+import { useRenameParticipant } from '../state/useRenameParticipant';
 import { ParticipantList } from '../shared-ui/ParticipantList';
 import { RoomHeader } from '../shared-ui/RoomHeader';
 import { RetroColumn } from './RetroColumn';
@@ -11,6 +12,7 @@ interface RetroRoomViewProps {
 
 export function RetroRoomView({ state }: RetroRoomViewProps) {
   const { participantId, retroAddCard, retroVote, retroClose, leaveRoom } = useRoom();
+  const onRename = useRenameParticipant();
   const [actionItemsText, setActionItemsText] = useState('');
 
   const me = state.participants.find((p) => p.id === participantId);
@@ -31,7 +33,11 @@ export function RetroRoomView({ state }: RetroRoomViewProps) {
       <div className="room-body">
         <aside>
           <h2>Participants</h2>
-          <ParticipantList participants={state.participants} currentParticipantId={participantId} />
+          <ParticipantList
+            participants={state.participants}
+            currentParticipantId={participantId}
+            onRename={onRename}
+          />
         </aside>
 
         <main>

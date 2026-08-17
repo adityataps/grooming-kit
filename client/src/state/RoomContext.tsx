@@ -6,6 +6,7 @@ import type {
   ErrorPayload,
   JoinRoomAck,
   PokerCard,
+  RenameAck,
   RetroColumnId,
   RoomState,
   RoomType,
@@ -22,6 +23,7 @@ export interface RoomContextValue {
   createRoom: (type: RoomType, displayName: string) => Promise<CreateRoomAck | ErrorAck>;
   joinRoom: (roomCode: string, displayName: string) => Promise<JoinRoomAck | ErrorAck>;
   leaveRoom: () => void;
+  renameParticipant: (displayName: string) => Promise<RenameAck | ErrorAck>;
   pokerVote: (card: PokerCard) => void;
   pokerReveal: () => void;
   pokerReset: () => void;
@@ -171,6 +173,21 @@ export function RoomProvider({ children }: { children: ReactNode }) {
     setClosedReason(null);
   }, []);
 
+  const renameParticipant = useCallback<RoomContextValue['renameParticipant']>(
+    (displayName) =>
+      new Promise((resolve) => {
+        socketRef.current.emit('participant:rename', { displayName }, (ack) => {
+          if (ack.ok) {
+            // Keep the reconnect-on-refresh session name in sync with the
+            // (possibly server-de-duplicated) applied name.
+            sessionStorage.setItem(SESSION_STORAGE_KEYS.displayName, ack.displayName);
+          }
+          resolve(ack);
+        });
+      }),
+    []
+  );
+
   const pokerVote = useCallback((card: PokerCard) => {
     socketRef.current.emit('poker:vote', { card });
   }, []);
@@ -197,6 +214,7 @@ export function RoomProvider({ children }: { children: ReactNode }) {
     createRoom,
     joinRoom,
     leaveRoom,
+    renameParticipant,
     pokerVote,
     pokerReveal,
     pokerReset,

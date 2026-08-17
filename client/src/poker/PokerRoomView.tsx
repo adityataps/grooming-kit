@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import type { PokerCard, PokerRoomState } from '@grooming-kit/shared';
 import { useRoom } from '../state/RoomContext';
+import { useRenameParticipant } from '../state/useRenameParticipant';
 import { ParticipantList } from '../shared-ui/ParticipantList';
 import { RoomHeader } from '../shared-ui/RoomHeader';
 import { CardDeck } from './CardDeck';
@@ -13,6 +14,7 @@ interface PokerRoomViewProps {
 
 export function PokerRoomView({ state }: PokerRoomViewProps) {
   const { participantId, pokerVote, pokerReveal, pokerReset, leaveRoom } = useRoom();
+  const onRename = useRenameParticipant();
   const [selected, setSelected] = useState<PokerCard | null>(null);
   const [showConfetti, setShowConfetti] = useState(false);
 
@@ -52,7 +54,11 @@ export function PokerRoomView({ state }: PokerRoomViewProps) {
       <div className="room-body">
         <aside>
           <h2>Participants</h2>
-          <ParticipantList participants={state.participants} currentParticipantId={participantId} />
+          <ParticipantList
+            participants={state.participants}
+            currentParticipantId={participantId}
+            onRename={onRename}
+          />
           <p className="vote-progress">
             {votedCount} / {state.participants.length} voted
           </p>
