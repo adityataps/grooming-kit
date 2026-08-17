@@ -23,6 +23,7 @@ export interface RoomContextValue {
   createRoom: (type: RoomType, displayName: string) => Promise<CreateRoomAck | ErrorAck>;
   joinRoom: (roomCode: string, displayName: string) => Promise<JoinRoomAck | ErrorAck>;
   leaveRoom: () => void;
+  endSession: () => void;
   renameParticipant: (displayName: string) => Promise<RenameAck | ErrorAck>;
   pokerVote: (card: PokerCard) => void;
   pokerReveal: () => void;
@@ -173,6 +174,22 @@ export function RoomProvider({ children }: { children: ReactNode }) {
     setClosedReason(null);
   }, []);
 
+  /**
+   * Moderator-only: ends the room for everyone. Other participants learn via
+   * the broadcast `room:closed` event (handled generically above); the
+   * moderator's own client transitions back to the lobby immediately here
+   * rather than waiting for a round-trip, since they already confirmed the
+   * action.
+   */
+  const endSession = useCallback(() => {
+    socketRef.current.emit('room:end');
+    clearSession();
+    clearRoomCodeFromUrl();
+    setRoomState(null);
+    setParticipantId(null);
+    setClosedReason(null);
+  }, []);
+
   const renameParticipant = useCallback<RoomContextValue['renameParticipant']>(
     (displayName) =>
       new Promise((resolve) => {
@@ -214,6 +231,7 @@ export function RoomProvider({ children }: { children: ReactNode }) {
     createRoom,
     joinRoom,
     leaveRoom,
+    endSession,
     renameParticipant,
     pokerVote,
     pokerReveal,

@@ -9,10 +9,16 @@ function AppContent() {
   if (closedReason) {
     return (
       <div className="room-closed">
-        <p>{closedReason}</p>
-        <button type="button" onClick={dismissClosed}>
-          Back to lobby
-        </button>
+        <div className="room-closed-card" role="dialog" aria-modal="true" aria-labelledby="room-closed-title">
+          <span className="room-closed-icon" aria-hidden="true">
+            ✂️
+          </span>
+          <h2 id="room-closed-title">Session ended</h2>
+          <p>{closedReason}</p>
+          <button type="button" onClick={dismissClosed}>
+            Back to homepage
+          </button>
+        </div>
       </div>
     );
   }

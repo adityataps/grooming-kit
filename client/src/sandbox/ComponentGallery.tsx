@@ -23,7 +23,13 @@ export function ComponentGallery() {
       </div>
       <div>
         <h3>RoomHeader</h3>
-        <RoomHeader code="ABC123" typeLabel="Scrum Poker" onLeave={() => {}} />
+        <RoomHeader
+          code="ABC123"
+          typeLabel="Scrum Poker"
+          isModerator
+          onLeave={() => {}}
+          onEndSession={() => {}}
+        />
       </div>
     </div>
   );

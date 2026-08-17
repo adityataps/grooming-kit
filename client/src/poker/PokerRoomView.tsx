@@ -13,7 +13,7 @@ interface PokerRoomViewProps {
 }
 
 export function PokerRoomView({ state }: PokerRoomViewProps) {
-  const { participantId, pokerVote, pokerReveal, pokerReset, leaveRoom } = useRoom();
+  const { participantId, pokerVote, pokerReveal, pokerReset, leaveRoom, endSession } = useRoom();
   const onRename = useRenameParticipant();
   const [selected, setSelected] = useState<PokerCard | null>(null);
   const [showConfetti, setShowConfetti] = useState(false);
@@ -49,7 +49,13 @@ export function PokerRoomView({ state }: PokerRoomViewProps) {
   return (
     <div className="room poker-room">
       {showConfetti && <ConfettiBurst />}
-      <RoomHeader code={state.code} typeLabel="Scrum Poker" onLeave={leaveRoom} />
+      <RoomHeader
+        code={state.code}
+        typeLabel="Scrum Poker"
+        isModerator={isModerator}
+        onLeave={leaveRoom}
+        onEndSession={endSession}
+      />
 
       <div className="room-body">
         <aside>

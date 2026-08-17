@@ -161,6 +161,22 @@ export function registerSocketHandlers(
     }
   });
 
+  socket.on('room:end', () => {
+    const room = getRoomOrEmitError(socket, roomManager);
+    if (!room || !requireModerator(socket, room)) return;
+
+    // Tell everyone *else* in the room the session is over; the moderator's
+    // own client transitions back to the lobby immediately on their side
+    // (see `endSession` in RoomContext) without needing this round-trip.
+    socket.broadcast.to(room.code).emit('room:closed', {
+      reason: 'The moderator ended this session.',
+    });
+    io.in(room.code).socketsLeave(room.code);
+    roomManager.removeRoom(room.code);
+    socket.data.roomCode = undefined;
+    socket.data.participantId = undefined;
+  });
+
   socket.on('participant:rename', (payload, callback) => {
     const { roomCode, participantId } = socket.data;
     if (!roomCode || !participantId) {

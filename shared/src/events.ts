@@ -65,6 +65,8 @@ export interface ClientToServerEvents {
     callback: (ack: JoinRoomAck | ErrorAck) => void
   ) => void;
   'room:leave': () => void;
+  /** Moderator-only: closes the room for everyone (see `room:closed`). */
+  'room:end': () => void;
   'participant:rename': (
     payload: { displayName: string },
     callback: (ack: RenameAck | ErrorAck) => void

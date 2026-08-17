@@ -11,7 +11,7 @@ interface RetroRoomViewProps {
 }
 
 export function RetroRoomView({ state }: RetroRoomViewProps) {
-  const { participantId, retroAddCard, retroVote, retroClose, leaveRoom } = useRoom();
+  const { participantId, retroAddCard, retroVote, retroClose, leaveRoom, endSession } = useRoom();
   const onRename = useRenameParticipant();
   const [actionItemsText, setActionItemsText] = useState('');
 
@@ -28,7 +28,13 @@ export function RetroRoomView({ state }: RetroRoomViewProps) {
 
   return (
     <div className="room retro-room">
-      <RoomHeader code={state.code} typeLabel="Sprint Retro" onLeave={leaveRoom} />
+      <RoomHeader
+        code={state.code}
+        typeLabel="Sprint Retro"
+        isModerator={isModerator}
+        onLeave={leaveRoom}
+        onEndSession={endSession}
+      />
 
       <div className="room-body">
         <aside>

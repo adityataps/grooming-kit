@@ -124,9 +124,10 @@ Naming convention: `<domain>:<action>`. Client→server events are imperative ("
 | `room:create` | C→S | `{ type: RoomType, displayName: string }` | ack returns `{ roomCode, participantId }` |
 | `room:join` | C→S | `{ roomCode: string, displayName: string, participantId?: string }` | `participantId` present = reconnect attempt |
 | `room:leave` | C→S | `{}` | explicit leave |
+| `room:end` | C→S | `{}` | moderator-only; closes the room for everyone (see `room:closed`) |
 | `participant:rename` | C→S | `{ displayName: string }` | ack returns `{ displayName }` (may be de-duplicated); any participant, any time |
 | `room:state` | S→C | `PokerRoomState \| RetroRoomState` | full state broadcast after any mutation (MVP: full-state, not diffs) |
-| `room:closed` | S→C | `{ reason: string }` | room no longer exists; client returns to lobby |
+| `room:closed` | S→C | `{ reason: string }` | room no longer exists; client shows a "session ended" modal and returns to the lobby |
 | `poker:vote` | C→S | `{ card: PokerCard }` | rejected if `revealed === true` |
 | `poker:reveal` | C→S | `{}` | moderator-only, validated server-side |
 | `poker:reset` | C→S | `{}` | moderator-only |
@@ -182,3 +183,13 @@ All server-side handlers validate: (a) socket belongs to the room, (b) moderator
 
 
 
+
+## 14. End Session vs. Leave Room
+- **Two distinct moderator actions**: `RoomHeader.tsx` renders "Leave room" (any participant, unchanged behavior — only that participant departs, room continues) and, for the moderator only, a second destructive-styled "End session" button. Clicking it shows a native `window.confirm()` guard ("End this session for everyone? …") before doing anything, since it affects every participant.
+- **New `room:end` socket event** (`shared/src/events.ts`, C→S, no payload/ack): handled in `server/src/socketHandlers.ts` — validated moderator-only (reuses `requireModerator`), then:
+  1. `socket.broadcast.to(room.code).emit('room:closed', { reason })` — notifies every *other* connected socket in the room (the moderator's own socket is deliberately excluded from the broadcast).
+  2. `io.in(room.code).socketsLeave(room.code)` — forces every socket (including the moderator's) to leave the underlying Socket.IO room, so a future room reusing the same code can never leak broadcasts to stale sockets.
+  3. `roomManager.removeRoom(room.code)` — deletes the room from the live map (same cleanup path as the last-participant-leaves case).
+- **Client-side asymmetry by design**: the moderator's own `endSession()` (`RoomContext.tsx`) clears local state and returns to the lobby immediately, mirroring `leaveRoom()` — it does not wait for/rely on a `room:closed` echo, since they already confirmed the action. Every *other* participant receives `room:closed` and goes through the existing generic `handleRoomClosed` handler (clears session storage, strips `?room=` from the URL, sets `closedReason`), which now renders as a proper modal.
+- **"Session ended" modal** (`App.tsx`, `.room-closed`/`.room-closed-card` in `index.css`): upgraded from a plain full-page message to a dimmed-backdrop + centered card dialog (`role="dialog"`, `aria-modal="true"`) consistent with the app's card visual language, with a "Back to homepage" button that dismisses (`dismissClosed`) and returns to the Lobby.
+- **Reused existing infrastructure**: the `room:closed` event and `closedReason`/`dismissClosed` plumbing in `RoomContext`/`App.tsx` already existed (scaffolded early on) but were never actually emitted by the server before this change — `room:end` is the first (and so far only) trigger for it.
