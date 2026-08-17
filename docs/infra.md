@@ -290,3 +290,77 @@ Two independent workflows, each triggered only by path changes relevant to it, b
   the domain mapping — this can take anywhere from a few minutes to ~24 hours on first setup.
 - **Secrets**: none required for MVP (no DB, no third-party API keys). If added later, use Google
   Secret Manager + Cloud Run secret env var references, not Terraform variables in plain state.
+
+## 7. Estimated Cost Analysis
+
+Prices below are GCP list prices as of writing (2025, `us-east1`/US multi-region rates) — re-verify
+against the [Cloud Run](https://cloud.google.com/run/pricing),
+[Cloud Storage](https://cloud.google.com/storage/pricing), and
+[Artifact Registry](https://cloud.google.com/artifact-registry/pricing) pricing pages before
+relying on this for budgeting, since GCP pricing changes over time.
+
+### 7.1 Usage assumptions (small internal team)
+- ~8 participants, 3 sessions/week (poker + retro combined), ~45 min/session
+- → **~9 hours/month** of Cloud Run instance uptime (rounded up generously to 10 hrs/month for
+  buffer/testing/cold-start overlap)
+- SPA build size: a few MB (React + Vite output)
+- Backend Docker image: ~150–250 MB per build
+
+### 7.2 Cloud Run (backend)
+| Resource | Free tier (per billing account/month) | Our estimated usage | Cost |
+|---|---|---|---|
+| vCPU-seconds | 180,000 free | 10 hrs × 3600s × 1 vCPU = 36,000 | **$0** (well under free tier) |
+| Memory GiB-seconds | 360,000 free | 10 hrs × 3600s × 0.5 GiB = 18,000 | **$0** |
+| Requests | 2,000,000 free | Low thousands/month (connections + reconnects) | **$0** |
+| Egress (NA) | 1 GiB free | Small JSON broadcast payloads, negligible | **$0** |
+
+Cloud Run only bills for CPU/memory while a request (including an open WebSocket connection) is
+active — since `min-instances=0`, there is **no charge while the room is idle/empty**. At this
+usage level, the backend should stay entirely within Cloud Run's always-free monthly quota →
+**~$0/month**.
+
+**Sensitivity check** — for reference, the free vCPU-second quota (180,000/mo) would only be
+exhausted by roughly **50 vCPU-hours/month** of active connections — i.e. this team would need to
+have the room continuously occupied for ~7% of every month before any Cloud Run compute charge
+appears.
+
+### 7.3 GCS (frontend static hosting)
+| Resource | Free tier/month | Our estimated usage | Cost |
+|---|---|---|---|
+| Standard storage | 5 GB free | A few MB (SPA build) | **$0** |
+| Class A ops (uploads) | 5,000 free | ~Dozens/month (one per deploy) | **$0** |
+| Class B ops (reads) | 50,000 free | Low thousands/month (page loads × assets), further reduced by Cloudflare edge caching | **$0** |
+| Egress | 100 GB free | Negligible for this file size/traffic | **$0** |
+
+**~$0/month**, and Cloudflare's proxy/CDN in front further reduces actual GCS origin hits.
+
+### 7.4 Artifact Registry (backend images)
+- Free tier: 0.5 GB storage/month, always free.
+- A single backend image is ~150–250 MB; keeping 2 recent revisions fits inside the free tier.
+- **Recommendation**: add a cleanup policy (`google_artifact_registry_repository` cleanup policies,
+  e.g. keep last 5 versions) so CI doesn't silently accumulate old images past the free tier.
+- If exceeded: ~$0.10/GB/month — even 5 GB of retained image history is only ~$0.50/month.
+
+### 7.5 Other components
+| Component | Cost |
+|---|---|
+| Workload Identity Federation (OIDC) | Free — no per-token or per-auth charge |
+| Cloud Run domain mapping | Free |
+| Cloudflare (Free plan: DNS, proxy/CDN, basic DDoS) | Free — no paid plan needed for this scale |
+| Terraform state GCS bucket (bootstrap) | A few KB of state files — **$0** (rounds to nothing) |
+
+### 7.6 Total estimated cost
+**~$0/month** at the assumed usage level (small team, a few sessions/week) — the design should sit
+entirely inside GCP's always-free tier, plus Cloudflare's free plan. The only realistic ways this
+starts costing real money:
+1. Setting `min-instances=1` to eliminate cold starts → roughly **$55–65/month** (CPU/memory billed
+   continuously instead of only during active connections) — a deliberate tradeoff to make later,
+   not something to reach for by default.
+2. Usage growing far beyond a single small team (many more concurrent rooms/hours) — Cloud Run's
+   `max-instances=1` cap (see §6/HLD §5) would need to be lifted first anyway, at which point
+   revisit both the Pub/Sub adapter (HLD §5) and this cost model together.
+3. Artifact Registry image history growing unbounded without a cleanup policy.
+
+None of these apply to the MVP as scoped, so this design has effectively **no fixed monthly
+infrastructure cost** beyond the (separately billed) domain registration you already own.
+
