@@ -52,6 +52,25 @@ ephemeral, and joined via a short room code or a URL with the code as a query pa
 - NFR8: **Deploy via CI/CD** — every merge to main can deploy the frontend and backend independently via GitHub Actions, with no manual credential handling (OIDC/Workload Identity Federation).
 - NFR9: **Fast first load** — Vite-built, code-split SPA; static assets served from CDN-backed storage.
 
+## Future Features (Post-MVP, not built now)
+
+### Standup Lead Picker (third room type)
+A lightweight "spin the wheel" room type for randomly picking who leads standup that day,
+for teams that rotate facilitation.
+
+- Room type fixed at creation, same as Poker/Retro (`type: 'standup-picker'`).
+- Participants join the same way (display name, presence list).
+- Moderator (or any participant — TBD when scoped) triggers a "spin"; server picks one random
+  connected participant and broadcasts the result to everyone with a spinner/RNG animation.
+- Open questions to resolve when this is scoped: should the last-picked person be excluded from
+  the next spin (avoid immediate repeats)? Does history persist across days, or reset every spin
+  (leaning toward reset, consistent with NFR2 ephemeral state)? Single winner only, or also
+  reveal a full randomized order (e.g., for round-robin backup presenters)?
+- Architecturally low-cost to add later: extends `RoomType` in `shared/room.types.ts`, adds a
+  `StandupPickerRoomState` type and a `standup:spin` / `standup:result` event pair, following the
+  same client-emits-intent → server-mutates-authoritative-state → broadcast pattern as Poker/Retro
+  (see LLD §5, HLD §3). No infra or backend architecture changes required.
+
 ## Explicit Non-Goals (MVP)
 - No user accounts/authentication
 - No persistence/history of past sessions

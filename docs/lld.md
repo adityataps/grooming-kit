@@ -53,6 +53,9 @@ grooming-kit/
 ## 2. Shared Types (`shared/src/room.types.ts`)
 
 ```ts
+// 'standup-picker' is a planned post-MVP addition (see requirements.md → Future Features);
+// adding it here plus a StandupPickerRoomState + standup:* events is the only shared-contract
+// change needed — no infra/backend architecture change required.
 export type RoomType = 'poker' | 'retro';
 
 export interface Participant {
