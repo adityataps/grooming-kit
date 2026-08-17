@@ -5,6 +5,7 @@ import { MOCK_PARTICIPANT_ID, MOCK_PARTICIPANTS } from './mockData';
 
 export function ComponentGallery() {
   const [participants, setParticipants] = useState(MOCK_PARTICIPANTS);
+  const viewerIsModerator = participants.find((p) => p.id === MOCK_PARTICIPANT_ID)?.isModerator ?? false;
 
   return (
     <div className="sandbox-gallery">
@@ -16,6 +17,13 @@ export function ComponentGallery() {
           onRename={async (displayName) => {
             setParticipants((prev) =>
               prev.map((p) => (p.id === MOCK_PARTICIPANT_ID ? { ...p, displayName } : p))
+            );
+            return { ok: true };
+          }}
+          viewerIsModerator={viewerIsModerator}
+          onMakeModerator={async (participantId) => {
+            setParticipants((prev) =>
+              prev.map((p) => ({ ...p, isModerator: p.id === participantId }))
             );
             return { ok: true };
           }}

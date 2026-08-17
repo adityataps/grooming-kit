@@ -26,6 +26,7 @@ export function mockRoomContextBase(participantId: string): Omit<
       console.info('[sandbox] endSession (no-op)');
     },
     renameParticipant: async (displayName: string) => ({ ok: true, displayName }),
+    makeModerator: async () => ({ ok: true }),
     dismissError: () => {},
     dismissClosed: () => {},
   };

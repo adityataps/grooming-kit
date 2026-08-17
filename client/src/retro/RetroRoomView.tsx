@@ -11,7 +11,8 @@ interface RetroRoomViewProps {
 }
 
 export function RetroRoomView({ state }: RetroRoomViewProps) {
-  const { participantId, retroAddCard, retroVote, retroClose, leaveRoom, endSession } = useRoom();
+  const { participantId, retroAddCard, retroVote, retroClose, leaveRoom, endSession, makeModerator } =
+    useRoom();
   const onRename = useRenameParticipant();
   const [actionItemsText, setActionItemsText] = useState('');
 
@@ -43,6 +44,8 @@ export function RetroRoomView({ state }: RetroRoomViewProps) {
             participants={state.participants}
             currentParticipantId={participantId}
             onRename={onRename}
+            viewerIsModerator={isModerator}
+            onMakeModerator={makeModerator}
           />
         </aside>
 

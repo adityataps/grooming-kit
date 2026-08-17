@@ -463,25 +463,34 @@ aside h2 {
   letter-spacing: 0.04em;
 }
 
-.participant-list .rename-button {
+.participant-list .rename-button,
+.participant-list .make-moderator-button {
   background: none;
   border: none;
   cursor: pointer;
   padding: 0;
   font-size: 0.75rem;
   line-height: 1;
-  opacity: 0.5;
+  opacity: 0;
   flex-shrink: 0;
   transition: opacity 0.15s ease;
 }
 
 .participant-list li:hover .rename-button,
-.participant-list li:focus-within .rename-button {
+.participant-list li:focus-within .rename-button,
+.participant-list li:hover .make-moderator-button,
+.participant-list li:focus-within .make-moderator-button {
   opacity: 0.85;
 }
 
-.participant-list .rename-button:hover {
+.participant-list .rename-button:hover,
+.participant-list .make-moderator-button:hover {
   opacity: 1 !important;
+}
+
+.participant-list .make-moderator-button:disabled {
+  opacity: 0.3 !important;
+  cursor: not-allowed;
 }
 
 .participant-list .rename-form {

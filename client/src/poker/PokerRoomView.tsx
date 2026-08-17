@@ -13,7 +13,8 @@ interface PokerRoomViewProps {
 }
 
 export function PokerRoomView({ state }: PokerRoomViewProps) {
-  const { participantId, pokerVote, pokerReveal, pokerReset, leaveRoom, endSession } = useRoom();
+  const { participantId, pokerVote, pokerReveal, pokerReset, leaveRoom, endSession, makeModerator } =
+    useRoom();
   const onRename = useRenameParticipant();
   const [selected, setSelected] = useState<PokerCard | null>(null);
   const [showConfetti, setShowConfetti] = useState(false);
@@ -64,6 +65,8 @@ export function PokerRoomView({ state }: PokerRoomViewProps) {
             participants={state.participants}
             currentParticipantId={participantId}
             onRename={onRename}
+            viewerIsModerator={isModerator}
+            onMakeModerator={makeModerator}
           />
           <p className="vote-progress">
             {votedCount} / {state.participants.length} voted

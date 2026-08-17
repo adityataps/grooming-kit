@@ -5,6 +5,7 @@ import type {
   ErrorAck,
   ErrorPayload,
   JoinRoomAck,
+  MakeModeratorAck,
   PokerCard,
   RenameAck,
   RetroColumnId,
@@ -25,6 +26,7 @@ export interface RoomContextValue {
   leaveRoom: () => void;
   endSession: () => void;
   renameParticipant: (displayName: string) => Promise<RenameAck | ErrorAck>;
+  makeModerator: (participantId: string) => Promise<MakeModeratorAck | ErrorAck>;
   pokerVote: (card: PokerCard) => void;
   pokerReveal: () => void;
   pokerReset: () => void;
@@ -205,6 +207,14 @@ export function RoomProvider({ children }: { children: ReactNode }) {
     []
   );
 
+  const makeModerator = useCallback<RoomContextValue['makeModerator']>(
+    (participantId) =>
+      new Promise((resolve) => {
+        socketRef.current.emit('participant:makeModerator', { participantId }, resolve);
+      }),
+    []
+  );
+
   const pokerVote = useCallback((card: PokerCard) => {
     socketRef.current.emit('poker:vote', { card });
   }, []);
@@ -233,6 +243,7 @@ export function RoomProvider({ children }: { children: ReactNode }) {
     leaveRoom,
     endSession,
     renameParticipant,
+    makeModerator,
     pokerVote,
     pokerReveal,
     pokerReset,

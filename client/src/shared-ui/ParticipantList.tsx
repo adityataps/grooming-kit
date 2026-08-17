@@ -3,7 +3,7 @@ import type { KeyboardEvent } from 'react';
 import type { Participant } from '@grooming-kit/shared';
 import { Avatar } from './Avatar';
 
-interface RenameResult {
+interface ActionResult {
   ok: boolean;
   message?: string;
 }
@@ -12,14 +12,26 @@ interface ParticipantListProps {
   participants: Participant[];
   currentParticipantId: string | null;
   /** Enables the rename pencil on the current participant's own entry. */
-  onRename?: (displayName: string) => Promise<RenameResult>;
+  onRename?: (displayName: string) => Promise<ActionResult>;
+  /** True when the viewer is the current moderator — enables the "make moderator" action on other rows. */
+  viewerIsModerator?: boolean;
+  /** Enables the 👑 "make moderator" action on every other (non-self, non-moderator) entry. */
+  onMakeModerator?: (participantId: string) => Promise<ActionResult>;
 }
 
-export function ParticipantList({ participants, currentParticipantId, onRename }: ParticipantListProps) {
+export function ParticipantList({
+  participants,
+  currentParticipantId,
+  onRename,
+  viewerIsModerator,
+  onMakeModerator,
+}: ParticipantListProps) {
   const [editing, setEditing] = useState(false);
   const [value, setValue] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [promotingId, setPromotingId] = useState<string | null>(null);
+  const [promoteError, setPromoteError] = useState<{ id: string; message: string } | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -64,11 +76,28 @@ export function ParticipantList({ participants, currentParticipantId, onRename }
     }
   }
 
+  async function handleMakeModerator(target: Participant): Promise<void> {
+    if (!onMakeModerator) return;
+    const confirmed = window.confirm(
+      `Make ${target.displayName} the moderator? You will no longer have moderator controls.`
+    );
+    if (!confirmed) return;
+
+    setPromotingId(target.id);
+    setPromoteError(null);
+    const result = await onMakeModerator(target.id);
+    setPromotingId(null);
+    if (!result.ok) {
+      setPromoteError({ id: target.id, message: result.message ?? 'Could not update moderator.' });
+    }
+  }
+
   return (
     <ul className="participant-list">
       {participants.map((p) => {
         const isSelf = p.id === currentParticipantId;
         const isEditingSelf = isSelf && editing;
+        const canPromote = !isSelf && !p.isModerator && viewerIsModerator && Boolean(onMakeModerator);
 
         return (
           <li key={p.id} className={p.connected ? 'connected' : 'disconnected'}>
@@ -103,6 +132,18 @@ export function ParticipantList({ participants, currentParticipantId, onRename }
                     ✏️
                   </button>
                 )}
+                {canPromote && (
+                  <button
+                    type="button"
+                    className="make-moderator-button"
+                    onClick={() => void handleMakeModerator(p)}
+                    disabled={promotingId === p.id}
+                    aria-label={`Make ${p.displayName} moderator`}
+                    title="Make moderator"
+                  >
+                    👑
+                  </button>
+                )}
               </span>
               {(p.isModerator || (isSelf && !editing)) && (
                 <span className="participant-meta">
@@ -111,6 +152,7 @@ export function ParticipantList({ participants, currentParticipantId, onRename }
                 </span>
               )}
               {isEditingSelf && error && <span className="rename-error">{error}</span>}
+              {promoteError?.id === p.id && <span className="rename-error">{promoteError.message}</span>}
             </span>
           </li>
         );

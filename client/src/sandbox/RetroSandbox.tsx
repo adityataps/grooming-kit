@@ -55,6 +55,13 @@ export function RetroSandbox() {
       }));
       return { ok: true, displayName };
     },
+    makeModerator: async (participantId: string) => {
+      setRetroState((prev) => ({
+        ...prev,
+        participants: prev.participants.map((p) => ({ ...p, isModerator: p.id === participantId })),
+      }));
+      return { ok: true };
+    },
   };
 
   function resetDemo(): void {

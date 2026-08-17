@@ -206,6 +206,35 @@ export function registerSocketHandlers(
     broadcastState(io, room);
   });
 
+  socket.on('participant:makeModerator', (payload, callback) => {
+    const { roomCode, participantId } = socket.data;
+    if (!roomCode || !participantId) {
+      callback({ ok: false, code: 'ROOM_NOT_FOUND', message: 'You are not currently in a room.' });
+      return;
+    }
+
+    const room = roomManager.getRoom(roomCode);
+    if (!room) {
+      callback({ ok: false, code: 'ROOM_NOT_FOUND', message: `Room ${roomCode} was not found.` });
+      return;
+    }
+
+    if (!room.isModerator(participantId)) {
+      callback({ ok: false, code: 'NOT_MODERATOR', message: 'Only the moderator can do that.' });
+      return;
+    }
+
+    const target = room.getParticipant(payload.participantId);
+    if (!target) {
+      callback({ ok: false, code: 'INVALID_ACTION', message: 'That participant is no longer in the room.' });
+      return;
+    }
+
+    room.setModerator(payload.participantId);
+    callback({ ok: true });
+    broadcastState(io, room);
+  });
+
   socket.on('disconnect', () => {
     const { roomCode, participantId } = socket.data;
     if (!roomCode || !participantId) return;
@@ -216,6 +245,13 @@ export function registerSocketHandlers(
     room.markDisconnected(participantId, () => {
       if (room.isEmpty()) {
         roomManager.removeRoom(roomCode);
+      } else {
+        // A participant was just permanently removed after the grace
+        // period (and may have triggered a moderator promotion) — the
+        // immediate broadcast below only reflected the "disconnected"
+        // flag flip, so a second broadcast is needed once the removal
+        // (and any promotion) actually lands.
+        broadcastState(io, room);
       }
     });
     broadcastState(io, room);

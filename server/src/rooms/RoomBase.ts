@@ -65,6 +65,7 @@ export abstract class RoomBase {
     const record = this.participants.get(participantId);
     if (record?.disconnectTimer) clearTimeout(record.disconnectTimer);
     this.participants.delete(participantId);
+    this.promoteModeratorIfNeeded();
   }
 
   /** Network-blip/refresh path: mark disconnected, remove for good only after the grace period. */
@@ -75,8 +76,37 @@ export abstract class RoomBase {
     record.socketId = null;
     record.disconnectTimer = setTimeout(() => {
       this.participants.delete(participantId);
+      this.promoteModeratorIfNeeded();
       onExpire();
     }, DISCONNECT_GRACE_MS);
+  }
+
+  /**
+   * If the room no longer has a moderator (the moderator just left/expired),
+   * promote the longest-standing remaining participant — Map iteration order
+   * follows insertion order, so `.values().next()` is "next in the roster".
+   * No-op if a moderator still remains or the room is now empty.
+   */
+  private promoteModeratorIfNeeded(): void {
+    const hasModerator = Array.from(this.participants.values()).some((p) => p.isModerator);
+    if (hasModerator) return;
+    const next = this.participants.values().next().value;
+    if (next) next.isModerator = true;
+  }
+
+  /**
+   * Explicit moderator hand-off, e.g. the current moderator designating
+   * someone else. Enforces a single moderator: unsets everyone else first.
+   * Returns false if the target participant isn't in the room.
+   */
+  setModerator(participantId: string): boolean {
+    const record = this.participants.get(participantId);
+    if (!record) return false;
+    for (const p of this.participants.values()) {
+      p.isModerator = false;
+    }
+    record.isModerator = true;
+    return true;
   }
 
   isEmpty(): boolean {

@@ -35,6 +35,13 @@ export function PokerSandbox() {
       }));
       return { ok: true, displayName };
     },
+    makeModerator: async (participantId: string) => {
+      setPokerState((prev) => ({
+        ...prev,
+        participants: prev.participants.map((p) => ({ ...p, isModerator: p.id === participantId })),
+      }));
+      return { ok: true };
+    },
     retroAddCard: () => {},
     retroVote: () => {},
     retroClose: () => {},

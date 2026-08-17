@@ -47,6 +47,10 @@ export interface RenameAck {
   displayName: string;
 }
 
+export interface MakeModeratorAck {
+  ok: true;
+}
+
 /** Server → client events: state/facts broadcast by the authoritative server. */
 export interface ServerToClientEvents {
   'room:state': (state: RoomState) => void;
@@ -70,6 +74,11 @@ export interface ClientToServerEvents {
   'participant:rename': (
     payload: { displayName: string },
     callback: (ack: RenameAck | ErrorAck) => void
+  ) => void;
+  /** Moderator-only: transfers the moderator role to another participant. */
+  'participant:makeModerator': (
+    payload: { participantId: string },
+    callback: (ack: MakeModeratorAck | ErrorAck) => void
   ) => void;
   'poker:vote': (payload: { card: PokerCard }) => void;
   'poker:reveal': () => void;
