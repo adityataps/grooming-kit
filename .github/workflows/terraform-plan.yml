@@ -1,0 +1,52 @@
+name: Terraform plan
+
+# See docs/infra.md §5.3. Read-only — `terraform apply` for infra changes stays manual/local for
+# MVP (see infra/ci-cd.tf's `terraform-plan` service account, which only has roles/viewer).
+#
+# Requires these repo secrets:
+#   WIF_PR_PROVIDER   — infra output `wif_pr_provider`
+#   TERRAFORM_PLAN_SA — infra output `terraform_plan_sa`
+#   GCP_PROJECT_ID    — the GCP project ID
+#   TF_STATE_BUCKET   — the bucket name from infra/bootstrap's `tf_state_bucket` output
+# Plus a repo variable (not secret, just for var-file/env convenience) or additional secrets for
+# the other required TF_VAR_* values (cloudflare_zone_id, etc.) if they differ from the defaults
+# in infra/variables.tf.
+
+on:
+  pull_request:
+    paths:
+      - 'infra/**'
+
+permissions:
+  contents: read
+  id-token: write
+  pull-requests: write
+
+jobs:
+  plan:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: infra
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: hashicorp/setup-terraform@v3
+
+      - id: auth
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.WIF_PR_PROVIDER }}
+          service_account: ${{ secrets.TERRAFORM_PLAN_SA }}
+
+      - run: terraform fmt -check -recursive
+
+      - run: terraform init -backend-config="bucket=${{ secrets.TF_STATE_BUCKET }}"
+
+      - run: terraform validate
+
+      - name: Terraform plan
+        env:
+          TF_VAR_project_id: ${{ secrets.GCP_PROJECT_ID }}
+          TF_VAR_cloudflare_zone_id: ${{ secrets.CLOUDFLARE_ZONE_ID }}
+        run: terraform plan -no-color -input=false

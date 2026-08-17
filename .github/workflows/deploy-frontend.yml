@@ -1,0 +1,63 @@
+name: Deploy frontend
+
+# See docs/infra.md §5.1. Requires these repo secrets (values come from `terraform output` in
+# infra/ once applied):
+#   WIF_PROVIDER          — infra output `wif_provider`
+#   FRONTEND_DEPLOYER_SA   — infra output `frontend_deployer_sa`
+#   FRONTEND_BUCKET        — infra output `frontend_bucket`
+#   API_URL                — https://<infra output `api_domain`>
+#   CLOUDFLARE_ZONE_ID     — the Cloudflare zone ID for domain_root
+#   CLOUDFLARE_API_TOKEN   — scoped "Zone:Cache Purge:Edit" token
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'client/**'
+      - 'shared/**'
+      - '.github/workflows/deploy-frontend.yml'
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - run: npm run build --workspace=shared
+
+      - name: Build client
+        env:
+          VITE_API_URL: ${{ secrets.API_URL }}
+        run: npm run build --workspace=client
+
+      - id: auth
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
+          service_account: ${{ secrets.FRONTEND_DEPLOYER_SA }}
+
+      - name: Upload build to GCS
+        uses: google-github-actions/upload-cloud-storage@v2
+        with:
+          path: client/dist
+          destination: ${{ secrets.FRONTEND_BUCKET }}
+          parent: false
+
+      - name: Purge Cloudflare cache
+        run: |
+          curl -sS --fail -X POST \
+            "https://api.cloudflare.com/client/v4/zones/${{ secrets.CLOUDFLARE_ZONE_ID }}/purge_cache" \
+            -H "Authorization: Bearer ${{ secrets.CLOUDFLARE_API_TOKEN }}" \
+            -H "Content-Type: application/json" \
+            --data '{"purge_everything": true}'

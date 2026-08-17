@@ -1,0 +1,53 @@
+name: Deploy backend
+
+# See docs/infra.md §5.2. Requires these repo secrets (values come from `terraform output` in
+# infra/ once applied):
+#   WIF_PROVIDER          — infra output `wif_provider`
+#   BACKEND_DEPLOYER_SA    — infra output `backend_deployer_sa`
+#   GCP_PROJECT_ID         — the GCP project ID
+#   GCP_REGION             — infra var `region` (default us-east1)
+#   ARTIFACT_REGISTRY_REPO — infra output `artifact_registry_repo`
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'server/**'
+      - 'shared/**'
+      - '.github/workflows/deploy-backend.yml'
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - id: auth
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
+          service_account: ${{ secrets.BACKEND_DEPLOYER_SA }}
+
+      - uses: google-github-actions/setup-gcloud@v2
+
+      - name: Configure Docker for Artifact Registry
+        run: gcloud auth configure-docker ${{ secrets.GCP_REGION }}-docker.pkg.dev --quiet
+
+      - name: Build and push image
+        run: |
+          IMAGE="${{ secrets.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ secrets.ARTIFACT_REGISTRY_REPO }}/server:${{ github.sha }}"
+          docker build -f server/Dockerfile -t "$IMAGE" -t "${IMAGE%:*}:latest" .
+          docker push "$IMAGE"
+          docker push "${IMAGE%:*}:latest"
+          echo "IMAGE=$IMAGE" >> "$GITHUB_ENV"
+
+      - name: Deploy to Cloud Run
+        uses: google-github-actions/deploy-cloudrun@v2
+        with:
+          service: grooming-kit-backend
+          region: ${{ secrets.GCP_REGION }}
+          image: ${{ env.IMAGE }}

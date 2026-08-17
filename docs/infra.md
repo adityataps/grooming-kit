@@ -1,5 +1,16 @@
 # Infrastructure Design — Scrum Poker & Sprint Retro SPA
 
+> **Status: implemented.** This design has been scaffolded in full under `infra/` (Terraform),
+> `server/Dockerfile`, and `.github/workflows/`. See `infra/README.md` for setup steps and the
+> required GitHub Actions secrets. Notable refinements made during implementation, beyond what's
+> sketched below: the Docker build context is the **repo root** (not `server/`), since the
+> `@grooming-kit/shared` workspace package must be available via npm workspaces symlinks; the
+> Artifact Registry cleanup policy (§7.4) is implemented with a configurable `artifact_keep_count`
+> variable (default 5); and the optional `terraform-plan` workflow (§5.3) uses a **second, distinct
+> WIF provider** (not just a second service account) to structurally prevent PR-triggered plan
+> tokens from being able to impersonate the write-capable deploy service accounts — see
+> `infra/README.md`'s "Why two WIF providers" section for the full rationale.
+
 ## 1. Overview
 
 Single production environment. Root domain `tapshalkar.com` is managed in Cloudflare.

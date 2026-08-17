@@ -1,0 +1,11 @@
+# Copy this file to terraform.tfvars (gitignored) and fill in real values — never commit actual
+# project IDs/zone IDs alongside secrets. None of the values below are secret by themselves, but
+# terraform.tfvars is gitignored repo-wide as a blanket policy (see ../../.gitignore).
+
+project_id         = "your-gcp-project-id"
+region             = "us-east1"
+domain_root        = "tapshalkar.com"
+subdomain          = "grooming-kit"
+cloudflare_zone_id = "your-cloudflare-zone-id"
+github_repo        = "adityataps/grooming-kit"
+artifact_keep_count = 5

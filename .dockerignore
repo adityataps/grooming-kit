@@ -1,0 +1,16 @@
+# Docker build context is the monorepo root (see server/Dockerfile) — keep the context small
+# by excluding everything not explicitly COPYed by the Dockerfile.
+node_modules
+**/node_modules
+**/dist
+.git
+.github
+.idea
+.DS_Store
+docs
+infra
+client/src
+client/index.html
+client/vite.config.ts
+client/tsconfig*.json
+*.md
