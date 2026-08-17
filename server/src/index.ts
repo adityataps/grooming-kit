@@ -10,7 +10,7 @@ import type {
 import { RoomManager } from './rooms/RoomManager';
 import { registerSocketHandlers } from './socketHandlers';
 
-const PORT = Number(process.env.PORT) || 8080;
+const PORT = Number(process.env.PORT) || 8090;
 // See docs/infra.md §4.4 — the UI is served from a separate subdomain (no load balancer),
 // so the Socket.IO server must explicitly allow it as a CORS origin.
 const CORS_ORIGINS = (process.env.CORS_ORIGIN ?? 'http://localhost:5173').split(',');

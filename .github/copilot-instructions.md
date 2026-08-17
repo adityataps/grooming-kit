@@ -24,7 +24,7 @@ depend on `@grooming-kit/shared`).
 ```bash
 npm run dev
 ```
-Runs the server (tsx watch, default port 8080) and the Vite client dev
+Runs the server (tsx watch, default port 8090) and the Vite client dev
 server (default port 5173) concurrently.
 
 ### Run (production)
@@ -61,10 +61,10 @@ There are currently no test or lint scripts configured in this project.
 
 ### Environment Variables
 - **Server** (`server/.env`, see `server/.env.example`): `PORT` (default
-  8080), `CORS_ORIGIN` (comma-separated allowed origins, default
+  8090), `CORS_ORIGIN` (comma-separated allowed origins, default
   `http://localhost:5173`).
 - **Client** (`client/.env`, see `client/.env.example`): `VITE_API_URL`
-  (Socket.IO server URL, default `http://localhost:8080`).
+  (Socket.IO server URL, default `http://localhost:8090`).
 
 ### Wire Contract
 - `shared/src/events.ts` is the single source of truth for client↔server
