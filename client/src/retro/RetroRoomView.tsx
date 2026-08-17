@@ -50,7 +50,7 @@ export function RetroRoomView({ state }: RetroRoomViewProps) {
         </aside>
 
         <main>
-          {state.closed ? (
+          {state.closed && (
             <div className="action-items">
               <h2>Action items</h2>
               <ul>
@@ -60,37 +60,35 @@ export function RetroRoomView({ state }: RetroRoomViewProps) {
                 ))}
               </ul>
             </div>
-          ) : (
-            <>
-              <div className="retro-columns">
-                {state.columns.map((columnId) => (
-                  <RetroColumn
-                    key={columnId}
-                    columnId={columnId}
-                    cards={state.cards.filter((c) => c.columnId === columnId)}
-                    currentParticipantId={participantId}
-                    closed={state.closed}
-                    onAddCard={retroAddCard}
-                    onVote={retroVote}
-                  />
-                ))}
-              </div>
+          )}
 
-              {isModerator && (
-                <div className="moderator-controls">
-                  <h3>Close retro</h3>
-                  <textarea
-                    value={actionItemsText}
-                    onChange={(e) => setActionItemsText(e.target.value)}
-                    placeholder="One action item per line…"
-                    rows={4}
-                  />
-                  <button type="button" onClick={handleClose}>
-                    Close &amp; save action items
-                  </button>
-                </div>
-              )}
-            </>
+          <div className="retro-columns">
+            {state.columns.map((columnId) => (
+              <RetroColumn
+                key={columnId}
+                columnId={columnId}
+                cards={state.cards.filter((c) => c.columnId === columnId)}
+                currentParticipantId={participantId}
+                closed={state.closed}
+                onAddCard={retroAddCard}
+                onVote={retroVote}
+              />
+            ))}
+          </div>
+
+          {isModerator && !state.closed && (
+            <div className="moderator-controls">
+              <h3>Close retro</h3>
+              <textarea
+                value={actionItemsText}
+                onChange={(e) => setActionItemsText(e.target.value)}
+                placeholder="One action item per line…"
+                rows={4}
+              />
+              <button type="button" onClick={handleClose}>
+                Close &amp; save action items
+              </button>
+            </div>
           )}
         </main>
       </div>
