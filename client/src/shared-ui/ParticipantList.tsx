@@ -121,6 +121,12 @@ export function ParticipantList({
                 ) : (
                   <span className="participant-name">{p.displayName}</span>
                 )}
+                {!editing && (p.isModerator || isSelf) && (
+                  <span className="participant-meta">
+                    {p.isModerator && <span className="badge">moderator</span>}
+                    {isSelf && <span className="you">you</span>}
+                  </span>
+                )}
                 {isSelf && !editing && onRename && (
                   <button
                     type="button"
@@ -145,12 +151,6 @@ export function ParticipantList({
                   </button>
                 )}
               </span>
-              {(p.isModerator || (isSelf && !editing)) && (
-                <span className="participant-meta">
-                  {p.isModerator && <span className="badge">moderator</span>}
-                  {isSelf && !editing && <span className="you">you</span>}
-                </span>
-              )}
               {isEditingSelf && error && <span className="rename-error">{error}</span>}
               {promoteError?.id === p.id && <span className="rename-error">{promoteError.message}</span>}
             </span>

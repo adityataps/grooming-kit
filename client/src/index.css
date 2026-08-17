@@ -394,12 +394,13 @@ aside h2 {
 .participant-list .participant-name-row {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 0.4rem;
   min-width: 0;
 }
 
 .participant-list .participant-name {
-  flex: 1;
+  flex: 0 1 auto;
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
