@@ -14,10 +14,10 @@ const value: RoomContextValue = {
   retroClose: () => {},
 };
 
-export function LobbyPreview() {
+export function LobbySandbox() {
   return (
     <RoomContext.Provider value={value}>
-      <div className="preview-frame">
+      <div className="sandbox-frame">
         <Lobby />
       </div>
     </RoomContext.Provider>

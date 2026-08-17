@@ -113,8 +113,8 @@ export function Lobby() {
       </form>
 
       {import.meta.env.DEV && (
-        <a className="preview-link" href="/preview">
-          🎨 UI preview portal
+        <a className="sandbox-link" href="/sandbox">
+          🎨 UI sandbox
         </a>
       )}
     </div>

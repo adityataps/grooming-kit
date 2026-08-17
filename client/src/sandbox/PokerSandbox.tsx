@@ -6,7 +6,7 @@ import { PokerRoomView } from '../poker/PokerRoomView';
 import { MOCK_PARTICIPANT_ID, makePokerState } from './mockData';
 import { mockRoomContextBase } from './mockRoomContext';
 
-export function PokerPreview() {
+export function PokerSandbox() {
   const [pokerState, setPokerState] = useState(makePokerState);
 
   const value: RoomContextValue = {
@@ -50,7 +50,7 @@ export function PokerPreview() {
 
   return (
     <RoomContext.Provider value={value}>
-      <div className="preview-section-controls">
+      <div className="sandbox-section-controls">
         <button type="button" onClick={simulateConsensus}>
           🎉 Simulate consensus (confetti)
         </button>
@@ -58,7 +58,7 @@ export function PokerPreview() {
           Simulate split votes
         </button>
       </div>
-      <div className="preview-frame">
+      <div className="sandbox-frame">
         <PokerRoomView state={pokerState} />
       </div>
     </RoomContext.Provider>

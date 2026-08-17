@@ -6,7 +6,7 @@ import { RetroRoomView } from '../retro/RetroRoomView';
 import { MOCK_PARTICIPANT_ID, makeRetroState } from './mockData';
 import { mockRoomContextBase } from './mockRoomContext';
 
-export function RetroPreview() {
+export function RetroSandbox() {
   const [retroState, setRetroState] = useState(makeRetroState);
 
   const value: RoomContextValue = {
@@ -54,12 +54,12 @@ export function RetroPreview() {
 
   return (
     <RoomContext.Provider value={value}>
-      <div className="preview-section-controls">
+      <div className="sandbox-section-controls">
         <button type="button" onClick={resetDemo}>
           Reset demo data
         </button>
       </div>
-      <div className="preview-frame">
+      <div className="sandbox-frame">
         <RetroRoomView state={retroState} />
       </div>
     </RoomContext.Provider>

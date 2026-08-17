@@ -1,7 +1,7 @@
 import type { RoomContextValue } from '../state/RoomContext';
 
 /**
- * Base no-op RoomContextValue fields shared by every preview demo. Callers
+ * Base no-op RoomContextValue fields shared by every sandbox demo. Callers
  * spread this and override the specific action handlers (pokerVote, etc.)
  * they actually want to simulate.
  */
@@ -15,11 +15,11 @@ export function mockRoomContextBase(participantId: string): Omit<
     participantId,
     lastError: null,
     closedReason: null,
-    createRoom: async () => ({ ok: true, roomCode: 'PREVW', participantId }),
-    joinRoom: async () => ({ ok: true, roomCode: 'PREVW', participantId }),
+    createRoom: async () => ({ ok: true, roomCode: 'SNDBX', participantId }),
+    joinRoom: async () => ({ ok: true, roomCode: 'SNDBX', participantId }),
     leaveRoom: () => {
       // eslint-disable-next-line no-console
-      console.info('[preview] leaveRoom (no-op)');
+      console.info('[sandbox] leaveRoom (no-op)');
     },
     dismissError: () => {},
     dismissClosed: () => {},
