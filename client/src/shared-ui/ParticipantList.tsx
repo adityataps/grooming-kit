@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import type { KeyboardEvent } from 'react';
 import type { Participant } from '@grooming-kit/shared';
+import { Avatar } from './Avatar';
 
 interface RenameResult {
   ok: boolean;
@@ -71,38 +72,46 @@ export function ParticipantList({ participants, currentParticipantId, onRename }
 
         return (
           <li key={p.id} className={p.connected ? 'connected' : 'disconnected'}>
-            <span className="presence-dot" aria-hidden="true" />
-            {isEditingSelf ? (
-              <span className="rename-form">
-                <input
-                  ref={inputRef}
-                  className="rename-input"
-                  value={value}
-                  onChange={(e) => setValue(e.target.value)}
-                  onKeyDown={handleKeyDown}
-                  onBlur={() => void commitEditing()}
-                  maxLength={40}
-                  disabled={saving}
-                  aria-label="Edit your display name"
-                />
+            <Avatar name={p.displayName} seed={p.id} size="sm" />
+            <span className="participant-info">
+              <span className="participant-name-row">
+                {isEditingSelf ? (
+                  <span className="rename-form">
+                    <input
+                      ref={inputRef}
+                      className="rename-input"
+                      value={value}
+                      onChange={(e) => setValue(e.target.value)}
+                      onKeyDown={handleKeyDown}
+                      onBlur={() => void commitEditing()}
+                      maxLength={40}
+                      disabled={saving}
+                      aria-label="Edit your display name"
+                    />
+                  </span>
+                ) : (
+                  <span className="participant-name">{p.displayName}</span>
+                )}
+                {isSelf && !editing && onRename && (
+                  <button
+                    type="button"
+                    className="rename-button"
+                    onClick={() => startEditing(p.displayName)}
+                    aria-label="Change your display name"
+                    title="Change your display name"
+                  >
+                    ✏️
+                  </button>
+                )}
               </span>
-            ) : (
-              p.displayName
-            )}
-            {p.isModerator && <span className="badge">moderator</span>}
-            {isSelf && !editing && <span className="you">(you)</span>}
-            {isSelf && !editing && onRename && (
-              <button
-                type="button"
-                className="rename-button"
-                onClick={() => startEditing(p.displayName)}
-                aria-label="Change your display name"
-                title="Change your display name"
-              >
-                ✏️
-              </button>
-            )}
-            {isEditingSelf && error && <span className="rename-error">{error}</span>}
+              {(p.isModerator || (isSelf && !editing)) && (
+                <span className="participant-meta">
+                  {p.isModerator && <span className="badge">moderator</span>}
+                  {isSelf && !editing && <span className="you">you</span>}
+                </span>
+              )}
+              {isEditingSelf && error && <span className="rename-error">{error}</span>}
+            </span>
           </li>
         );
       })}

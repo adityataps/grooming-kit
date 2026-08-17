@@ -1,4 +1,5 @@
 import type { Participant, PokerVote } from '@grooming-kit/shared';
+import { Avatar } from '../shared-ui/Avatar';
 
 interface VoteBoardProps {
   votes: PokerVote[];
@@ -15,7 +16,10 @@ export function VoteBoard({ votes, participants, revealed }: VoteBoardProps) {
           const participant = participants.find((p) => p.id === v.participantId);
           return (
             <li key={v.participantId}>
-              <span>{participant?.displayName ?? 'Unknown'}</span>
+              <span className="vote-board-name">
+                <Avatar name={participant?.displayName ?? '?'} seed={v.participantId} size="sm" />
+                {participant?.displayName ?? 'Unknown'}
+              </span>
               <span
                 className={`vote-face ${revealed ? 'is-revealed' : ''} ${v.hasVoted ? 'has-voted' : ''}`}
                 style={{ transitionDelay: revealed ? `${i * 70}ms` : '0ms' }}

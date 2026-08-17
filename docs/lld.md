@@ -175,4 +175,10 @@ All server-side handlers validate: (a) socket belongs to the room, (b) moderator
 - **Persistence**: `client/src/state/useRenameParticipant.ts` wraps `RoomContext`'s `renameParticipant` and calls `saveDisplayName()` on success — an explicit mid-session rename is always treated as a deliberate customization (same as editing the name in the Lobby), so it persists to `localStorage` and pre-fills future sessions.
 - **Sandbox**: `mockRoomContextBase` provides a default no-op `renameParticipant`; `PokerSandbox`/`RetroSandbox` override it to mutate their local mock participant list so the pencil is fully interactive in `/sandbox` too.
 
+## 13. Room UI Polish (Panels & Avatars)
+- **Card panels**: the participant sidebar (`<aside>`) and the poker `VoteBoard`/retro `action-items` summary are now styled as proper cards (`background: var(--surface)`, border, radius, shadow) matching the Lobby's card language, instead of a bare divider/list. `.room-body` gained `max-width` + `align-items: start` so the sidebar no longer stretches to match the main column's height and the layout stays centered on wide viewports.
+- **`Avatar` component** (`client/src/shared-ui/Avatar.tsx`): a colored initials bubble, seeded by participant **id** (not display name) via `hashHue()` so a participant's color stays stable across a rename. Used by both `ParticipantList` and `VoteBoard` for consistent per-person visual identity; connection status is shown as a colored ring (box-shadow) around the avatar rather than a separate presence dot.
+- **Two-row participant rows**: each `<li>` in `ParticipantList` splits into a `.participant-name-row` (avatar + name + rename pencil, name truncates with ellipsis if very long) and a `.participant-meta` row below it (`moderator` badge, `you` tag) — separating the name from the badges prevents the pencil icon from wrapping or the name from over-truncating in the 240px-wide sidebar when a participant has a long name plus multiple badges.
+
+
 
