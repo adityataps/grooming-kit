@@ -11,12 +11,20 @@ export function VoteBoard({ votes, participants, revealed }: VoteBoardProps) {
     <div className="vote-board">
       <h2>{revealed ? 'Results' : 'Votes'}</h2>
       <ul>
-        {votes.map((v) => {
+        {votes.map((v, i) => {
           const participant = participants.find((p) => p.id === v.participantId);
           return (
             <li key={v.participantId}>
               <span>{participant?.displayName ?? 'Unknown'}</span>
-              <strong>{revealed ? (v.card ?? '—') : v.hasVoted ? '✓' : '…'}</strong>
+              <span
+                className={`vote-face ${revealed ? 'is-revealed' : ''} ${v.hasVoted ? 'has-voted' : ''}`}
+                style={{ transitionDelay: revealed ? `${i * 70}ms` : '0ms' }}
+              >
+                <span className="vote-face-inner">
+                  <span className="vote-face-back">{v.hasVoted ? '✓' : '…'}</span>
+                  <span className="vote-face-front">{v.card ?? '—'}</span>
+                </span>
+              </span>
             </li>
           );
         })}

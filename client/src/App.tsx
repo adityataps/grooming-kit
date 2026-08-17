@@ -18,7 +18,14 @@ function AppContent() {
   }
 
   if (!connected) {
-    return <div className="connecting">Connecting…</div>;
+    return (
+      <div className="connecting">
+        <span className="spinner-emoji" aria-hidden="true">
+          ✂️
+        </span>
+        <p>Connecting…</p>
+      </div>
+    );
   }
 
   if (!roomState) {

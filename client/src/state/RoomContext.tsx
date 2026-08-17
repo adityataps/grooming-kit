@@ -13,7 +13,7 @@ import type {
 import { getSocket } from '../socket/socketClient';
 import { SESSION_STORAGE_KEYS } from '../config';
 
-interface RoomContextValue {
+export interface RoomContextValue {
   connected: boolean;
   roomState: RoomState | null;
   participantId: string | null;
@@ -32,7 +32,7 @@ interface RoomContextValue {
   dismissClosed: () => void;
 }
 
-const RoomContext = createContext<RoomContextValue | null>(null);
+export const RoomContext = createContext<RoomContextValue | null>(null);
 
 function clearSession(): void {
   sessionStorage.removeItem(SESSION_STORAGE_KEYS.roomCode);

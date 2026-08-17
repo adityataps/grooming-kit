@@ -33,7 +33,7 @@ export function Lobby() {
 
   return (
     <div className="lobby">
-      <h1>Grooming Kit</h1>
+      <h1>✂️ Grooming Kit 🪮</h1>
       <p className="subtitle">Realtime scrum poker &amp; sprint retros</p>
 
       <div className="tabs">
@@ -111,6 +111,12 @@ export function Lobby() {
           {mode === 'create' ? 'Create room' : 'Join room'}
         </button>
       </form>
+
+      {import.meta.env.DEV && (
+        <a className="preview-link" href="/preview">
+          🎨 UI preview portal
+        </a>
+      )}
     </div>
   );
 }
