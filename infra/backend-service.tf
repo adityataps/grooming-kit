@@ -26,11 +26,14 @@ resource "google_artifact_registry_repository" "backend" {
       tag_state = "ANY"
     }
   }
+
+  labels = local.labels
 }
 
 resource "google_cloud_run_v2_service" "backend" {
   name     = "grooming-kit-backend"
   location = var.region
+  labels   = local.labels
 
   template {
     scaling {

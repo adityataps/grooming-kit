@@ -11,6 +11,8 @@ resource "google_storage_bucket" "spa" {
     main_page_suffix = "index.html"
     not_found_page   = "index.html" # SPA client-side routing fallback
   }
+
+  labels = local.labels
 }
 
 resource "google_storage_bucket_iam_member" "public_read" {

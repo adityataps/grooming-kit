@@ -36,6 +36,12 @@ resource "google_storage_bucket" "tf_state" {
   versioning {
     enabled = true
   }
+
+  labels = {
+    app        = "grooming-kit"
+    managed_by = "terraform"
+    env        = "production"
+  }
 }
 
 output "tf_state_bucket" {

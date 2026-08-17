@@ -24,4 +24,13 @@ provider "cloudflare" {}
 locals {
   ui_domain  = "${var.subdomain}.${var.domain_root}"
   api_domain = "api.${var.subdomain}.${var.domain_root}"
+
+  # GCP labels (its equivalent of AWS-style tags) applied to every resource type that supports
+  # them below — for cost attribution and quick identification in the console. Values must be
+  # lowercase and match [a-z0-9_-]{1,63}, hence "grooming-kit" not "Grooming Kit".
+  labels = {
+    app        = "grooming-kit"
+    managed_by = "terraform"
+    env        = "production"
+  }
 }
