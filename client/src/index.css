@@ -599,13 +599,25 @@ aside h2 {
   display: flex;
   align-items: center;
   justify-content: center;
-  /* Safari has never shipped an unprefixed backface-visibility — the
-     -webkit- prefix is required or the back face stays visible and
-     overlaps the flipped front face. */
+  /* backface-visibility is the "correct" way to hide the face pointing
+     away from the viewer, but support for it (and transform-style:
+     preserve-3d) is inconsistent enough across browsers/versions that
+     the back face can still render mirrored on top of the front face
+     post-flip. The visibility toggle below (widely supported, no
+     3D-transform dependency) is the real fix — it forcibly hides each
+     face once the flip passes its midpoint, so there's never an
+     overlap regardless of backface-visibility support. Kept as
+     defense-in-depth where it does work. */
   -webkit-backface-visibility: hidden;
   backface-visibility: hidden;
+  visibility: visible;
+  transition: visibility 0s linear 0.25s;
   border-radius: 4px;
   font-weight: 700;
+}
+
+.vote-face.is-revealed .vote-face-back {
+  visibility: hidden;
 }
 
 .vote-face-back {
@@ -613,10 +625,15 @@ aside h2 {
 }
 
 .vote-face-front {
+  visibility: hidden;
   -webkit-transform: rotateY(180deg);
   transform: rotateY(180deg);
   color: var(--accent);
   background: color-mix(in srgb, var(--accent) 12%, transparent);
+}
+
+.vote-face.is-revealed .vote-face-front {
+  visibility: visible;
 }
 
 .vote-face.has-voted .vote-face-back {
