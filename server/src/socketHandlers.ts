@@ -28,6 +28,21 @@ function sanitizeDisplayName(raw: string): string {
   return raw.trim().slice(0, DISPLAY_NAME_MAX_LENGTH);
 }
 
+/**
+ * Appends " (2)", " (3)", etc. until the name no longer collides with an
+ * existing participant in the room — covers both auto-generated random
+ * names and manually-typed ones that happen to collide (NFR: participants
+ * in a session must be distinguishable by display name).
+ */
+function dedupeDisplayName(base: string, existingNames: string[]): string {
+  if (!existingNames.includes(base)) return base;
+  let attempt = 2;
+  while (existingNames.includes(`${base} (${attempt})`)) {
+    attempt += 1;
+  }
+  return `${base} (${attempt})`;
+}
+
 function getRoomOrEmitError(socket: IOSocket, roomManager: RoomManager): AnyRoom | undefined {
   const { roomCode } = socket.data;
   if (!roomCode) {
@@ -116,7 +131,8 @@ export function registerSocketHandlers(
     if (canReconnect) {
       room.reconnectParticipant(participantId, socket.id);
     } else {
-      room.addParticipant(participantId, displayName, socket.id, /* isModerator */ false);
+      const uniqueDisplayName = dedupeDisplayName(displayName, room.listDisplayNames());
+      room.addParticipant(participantId, uniqueDisplayName, socket.id, /* isModerator */ false);
     }
 
     socket.data.roomCode = room.code;

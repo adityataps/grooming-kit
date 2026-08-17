@@ -89,5 +89,10 @@ export abstract class RoomBase {
     );
   }
 
+  /** Public: current display names in the room, used to de-duplicate a new joiner's name. */
+  listDisplayNames(): string[] {
+    return Array.from(this.participants.values()).map((p) => p.displayName);
+  }
+
   abstract toState(): RoomState;
 }

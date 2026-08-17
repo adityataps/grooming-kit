@@ -40,6 +40,19 @@ function clearSession(): void {
   sessionStorage.removeItem(SESSION_STORAGE_KEYS.displayName);
 }
 
+/**
+ * Strips the `?room=` query param so a fresh Lobby mount (which happens on
+ * every return-to-lobby transition) doesn't try to auto-join the room we
+ * just left/were removed from — that room may already be deleted server-side
+ * once it's empty.
+ */
+function clearRoomCodeFromUrl(): void {
+  const url = new URL(window.location.href);
+  if (!url.searchParams.has('room')) return;
+  url.searchParams.delete('room');
+  window.history.replaceState(null, '', url.toString());
+}
+
 function persistSession(roomCode: string, participantId: string, displayName: string): void {
   sessionStorage.setItem(SESSION_STORAGE_KEYS.roomCode, roomCode);
   sessionStorage.setItem(SESSION_STORAGE_KEYS.participantId, participantId);
@@ -71,6 +84,7 @@ export function RoomProvider({ children }: { children: ReactNode }) {
         (ack) => {
           if (!ack.ok) {
             clearSession();
+            clearRoomCodeFromUrl();
             setParticipantId(null);
           }
         }
@@ -95,6 +109,7 @@ export function RoomProvider({ children }: { children: ReactNode }) {
       setClosedReason(payload.reason);
       setRoomState(null);
       clearSession();
+      clearRoomCodeFromUrl();
       setParticipantId(null);
     }
 
@@ -150,6 +165,7 @@ export function RoomProvider({ children }: { children: ReactNode }) {
   const leaveRoom = useCallback(() => {
     socketRef.current.emit('room:leave');
     clearSession();
+    clearRoomCodeFromUrl();
     setRoomState(null);
     setParticipantId(null);
     setClosedReason(null);

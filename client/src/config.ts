@@ -6,3 +6,8 @@ export const SESSION_STORAGE_KEYS = {
   participantId: 'gk:participantId',
   displayName: 'gk:displayName',
 } as const;
+
+/** Persists across sessions/tabs (unlike SESSION_STORAGE_KEYS, which is per-tab). */
+export const LOCAL_STORAGE_KEYS = {
+  displayName: 'gk:savedDisplayName',
+} as const;

@@ -1,12 +1,9 @@
-import { ROOM_CODE_LENGTH } from '@grooming-kit/shared';
-
-// Excludes visually-ambiguous characters: I, L, O, 0, 1 (see docs/lld.md §6).
-const ALPHABET = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
+import { ROOM_CODE_ALPHABET, ROOM_CODE_LENGTH } from '@grooming-kit/shared';
 
 export function generateRoomCode(): string {
   let code = '';
   for (let i = 0; i < ROOM_CODE_LENGTH; i += 1) {
-    code += ALPHABET[Math.floor(Math.random() * ALPHABET.length)];
+    code += ROOM_CODE_ALPHABET[Math.floor(Math.random() * ROOM_CODE_ALPHABET.length)];
   }
   return code;
 }

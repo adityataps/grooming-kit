@@ -204,6 +204,15 @@ textarea {
   gap: 0.5rem;
 }
 
+.auto-join-status {
+  color: var(--muted);
+  font-size: 0.85rem;
+  margin-bottom: 1rem;
+}
+.auto-join-status::before {
+  content: '⏳ ';
+}
+
 .sandbox-link {
   display: inline-block;
   margin-top: 1.5rem;
