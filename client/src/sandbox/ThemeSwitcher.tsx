@@ -1,14 +1,7 @@
-import { useState } from 'react';
-import { THEMES, applyTheme, getStoredTheme } from '../theme';
-import type { ThemeName } from '../theme';
+import { THEMES, useTheme } from '../theme';
 
 export function ThemeSwitcher() {
-  const [active, setActive] = useState<ThemeName>(getStoredTheme);
-
-  function handleSelect(theme: ThemeName): void {
-    applyTheme(theme);
-    setActive(theme);
-  }
+  const [active, select] = useTheme();
 
   return (
     <div className="theme-switcher">
@@ -17,7 +10,7 @@ export function ThemeSwitcher() {
           key={t.id}
           type="button"
           className={active === t.id ? 'active' : ''}
-          onClick={() => handleSelect(t.id)}
+          onClick={() => select(t.id)}
         >
           <span>{t.label}</span>
           <span className="theme-blurb">{t.blurb}</span>

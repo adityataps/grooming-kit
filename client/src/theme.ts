@@ -1,3 +1,5 @@
+import { useState } from 'react';
+
 export type ThemeName = 'midnight' | 'warm' | 'mono';
 
 export const THEMES: { id: ThemeName; label: string; blurb: string }[] = [
@@ -21,4 +23,20 @@ export function applyTheme(theme: ThemeName): void {
 
 export function initTheme(): void {
   applyTheme(getStoredTheme());
+}
+
+/**
+ * Shared React state for the active theme. Reused by every theme picker
+ * (compact header toggle, lobby toggle, and the full sandbox switcher) so
+ * they all stay in sync and persist the same way.
+ */
+export function useTheme(): [ThemeName, (theme: ThemeName) => void] {
+  const [active, setActive] = useState<ThemeName>(getStoredTheme);
+
+  function select(theme: ThemeName): void {
+    applyTheme(theme);
+    setActive(theme);
+  }
+
+  return [active, select];
 }

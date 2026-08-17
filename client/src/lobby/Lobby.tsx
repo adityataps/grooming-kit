@@ -2,6 +2,7 @@ import { useState } from 'react';
 import type { FormEvent } from 'react';
 import type { RoomType } from '@grooming-kit/shared';
 import { useRoom } from '../state/RoomContext';
+import { ThemeToggle } from '../shared-ui/ThemeToggle';
 
 export function Lobby() {
   const { createRoom, joinRoom, lastError, dismissError } = useRoom();
@@ -35,6 +36,8 @@ export function Lobby() {
     <div className="lobby">
       <h1>✂️ Grooming Kit 🪮</h1>
       <p className="subtitle">Realtime scrum poker &amp; sprint retros</p>
+
+      <ThemeToggle />
 
       <div className="tabs">
         <button

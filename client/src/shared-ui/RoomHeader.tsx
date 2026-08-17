@@ -1,3 +1,5 @@
+import { ThemeToggle } from './ThemeToggle';
+
 interface RoomHeaderProps {
   code: string;
   typeLabel: string;
@@ -18,6 +20,7 @@ export function RoomHeader({ code, typeLabel, onLeave }: RoomHeaderProps) {
         <span className="room-code">{code}</span>
       </div>
       <div className="room-actions">
+        <ThemeToggle />
         <button type="button" onClick={copyLink}>
           Copy invite link
         </button>

@@ -140,6 +140,31 @@ textarea {
   margin-bottom: 2rem;
 }
 
+.theme-toggle {
+  display: flex;
+  justify-content: center;
+  gap: 0.4rem;
+  margin: -1rem 0 1.5rem;
+}
+
+.theme-toggle button {
+  width: 2.2rem;
+  height: 2.2rem;
+  padding: 0;
+  font-size: 1.1rem;
+  line-height: 1;
+  border-radius: 999px;
+}
+
+.theme-toggle button.active {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 20%, var(--surface));
+}
+
+.room-header .theme-toggle {
+  margin: 0;
+}
+
 .tabs {
   display: flex;
   gap: 0.5rem;
