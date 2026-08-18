@@ -10,12 +10,13 @@ resource "cloudflare_record" "ui" {
 }
 
 # API: CNAME to Google's domain-mapping frontend (the exact target Google expects for domain
-# mappings, regardless of the mapped domain).
+# mappings, per the `resourceRecords` field the domain mapping itself reports — regardless of
+# the mapped domain).
 resource "cloudflare_record" "api" {
   zone_id = var.cloudflare_zone_id
   name    = "api.${var.subdomain}"
   type    = "CNAME"
-  content = "ghs.googleapis.com"
+  content = "ghs.googlehosted.com"
   # DNS-only (unproxied) while Google verifies domain ownership + provisions its managed cert.
   # Can be flipped to proxied = true afterward once google_cloud_run_domain_mapping.backend
   # shows a ready certificate.

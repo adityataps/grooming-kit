@@ -51,7 +51,7 @@ Cloudflare DNS (tapshalkar.com zone)
         │                                                       for custom-domain-named buckets;
         │                                                       Cloudflare terminates TLS at the edge)
         │
-        └── api.grooming-kit.tapshalkar.com (CNAME → ghs.googleapis.com)
+        └── api.grooming-kit.tapshalkar.com (CNAME → ghs.googlehosted.com)
                     │
                     ▼
             Cloud Run domain mapping (free, Preview)
@@ -168,7 +168,7 @@ resource "google_cloud_run_domain_mapping" "backend" {
 }
 ```
 The domain mapping resource, once applied, outputs the DNS records Google expects (a CNAME to
-`ghs.googleapis.com`); `dns.tf` creates that record and Google auto-provisions the managed cert
+`ghs.googlehosted.com`); `dns.tf` creates that record and Google auto-provisions the managed cert
 once DNS resolves.
 
 ### 4.3 Workload Identity Federation (`ci-cd.tf`)
@@ -247,7 +247,7 @@ resource "cloudflare_record" "api" {
   zone_id = var.cloudflare_zone_id
   name    = "api.grooming-kit"
   type    = "CNAME"
-  content = "ghs.googleapis.com"
+  content = "ghs.googlehosted.com"
   proxied = false   # DNS-only recommended for Google's domain verification + cert issuance;
                      # can be flipped to proxied=true afterward once the mapping is confirmed working
 }
