@@ -16,7 +16,7 @@ const PORT = Number(process.env.PORT) || 8090;
 const CORS_ORIGINS = (process.env.CORS_ORIGIN ?? 'http://localhost:5173').split(',');
 
 const app = express();
-app.get('/healthz', (_req, res) => {
+app.get('/health', (_req, res) => {
   res.status(200).send('ok');
 });
 
