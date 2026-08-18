@@ -176,6 +176,15 @@ export function Lobby() {
           🎨 UI sandbox
         </a>
       )}
+
+      <a
+        className="github-link"
+        href="https://github.com/adityataps/grooming-kit"
+        target="_blank"
+        rel="noreferrer"
+      >
+        View on GitHub
+      </a>
     </div>
   );
 }
