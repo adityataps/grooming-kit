@@ -7,14 +7,25 @@ import { RoomHeader } from '../shared-ui/RoomHeader';
 import { CardDeck } from './CardDeck';
 import { VoteBoard } from './VoteBoard';
 import { ConfettiBurst } from './ConfettiBurst';
+import { TimerControl } from './TimerControl';
+import { DistributionChart } from './DistributionChart';
 
 interface PokerRoomViewProps {
   state: PokerRoomState;
 }
 
 export function PokerRoomView({ state }: PokerRoomViewProps) {
-  const { participantId, pokerVote, pokerReveal, pokerReset, leaveRoom, endSession, makeModerator } =
-    useRoom();
+  const {
+    participantId,
+    pokerVote,
+    pokerReveal,
+    pokerReset,
+    pokerStartTimer,
+    pokerCancelTimer,
+    leaveRoom,
+    endSession,
+    makeModerator,
+  } = useRoom();
   const onRename = useRenameParticipant();
   const [selected, setSelected] = useState<PokerCard | null>(null);
   const [showConfetti, setShowConfetti] = useState(false);
@@ -74,6 +85,14 @@ export function PokerRoomView({ state }: PokerRoomViewProps) {
         </aside>
 
         <main>
+          <TimerControl
+            timerEndsAt={state.timerEndsAt}
+            isModerator={isModerator}
+            revealed={state.revealed}
+            onStart={pokerStartTimer}
+            onCancel={pokerCancelTimer}
+          />
+
           <CardDeck selectedCard={selected} disabled={state.revealed} onSelect={handleVote} />
 
           {isModerator && (
@@ -88,6 +107,8 @@ export function PokerRoomView({ state }: PokerRoomViewProps) {
           )}
 
           {isConsensus && <p className="consensus-banner">🎉 Consensus!</p>}
+
+          {state.revealed && <DistributionChart votes={state.votes} participants={state.participants} />}
 
           <VoteBoard votes={state.votes} participants={state.participants} revealed={state.revealed} />
         </main>

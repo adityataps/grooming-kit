@@ -31,6 +31,7 @@ export class RoomManager {
   }
 
   removeRoom(code: string): void {
+    this.rooms.get(code)?.cleanup();
     this.rooms.delete(code);
   }
 }

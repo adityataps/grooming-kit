@@ -50,6 +50,18 @@
 
 All actions follow this pattern: **client emits intent → server validates + mutates authoritative state → server broadcasts resulting state**. Clients never mutate shared state locally without server confirmation (NFR7).
 
+### 3.1 Server-initiated broadcast (example: Poker auto-reveal timer)
+
+The timer is the one flow where the server itself — not a client — is what triggers the next broadcast:
+
+1. Moderator's client emits `poker:startTimer` with `{ durationSec }` (30/60/90/120).
+2. Server validates (moderator, round not already revealed, allowed duration), records `timerEndsAt = Date.now() + durationSec * 1000`, and starts a `setTimeout` for `durationSec`.
+3. Server broadcasts `room:state` immediately so every client can render a synchronized countdown from the same absolute `timerEndsAt`.
+4. When the `setTimeout` fires server-side, the server flips `revealed = true` itself (identical effect to a manual `poker:reveal`) and broadcasts `room:state` again — no client round-trip involved.
+5. A moderator's `poker:cancelTimer` (or a manual `poker:reveal`/`poker:reset`) clears the pending `setTimeout` and nulls `timerEndsAt` before it fires.
+
+The countdown is intentionally *not* re-broadcast every second — clients derive the displayed remaining time locally from the single absolute `timerEndsAt` epoch, avoiding a chatty per-second broadcast.
+
 ## 4. Identity & Reconnection
 - On join, server assigns a `participantId` (UUID) and returns it to the client, which stores it in `sessionStorage` (tab-scoped, so multiple tabs = multiple participants, which is fine).
 - On reconnect (page refresh, network blip), client sends its stored `participantId` + `roomCode`; server re-attaches the socket to the existing participant record instead of creating a new one, preserving prior vote/cards.

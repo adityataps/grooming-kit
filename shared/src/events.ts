@@ -1,5 +1,5 @@
 import type { RoomType } from './room.types';
-import type { PokerCard, PokerRoomState } from './poker.types';
+import type { PokerCard, PokerRoomState, PokerTimerDuration } from './poker.types';
 import type { RetroColumnId, RetroRoomState } from './retro.types';
 
 export type RoomState = PokerRoomState | RetroRoomState;
@@ -83,6 +83,10 @@ export interface ClientToServerEvents {
   'poker:vote': (payload: { card: PokerCard }) => void;
   'poker:reveal': () => void;
   'poker:reset': () => void;
+  /** Moderator-only: (re)starts a countdown that auto-reveals the round once it elapses. */
+  'poker:startTimer': (payload: { durationSec: PokerTimerDuration }) => void;
+  /** Moderator-only: cancels a running auto-reveal countdown without revealing. */
+  'poker:cancelTimer': () => void;
   'retro:addCard': (payload: { columnId: RetroColumnId; text: string }) => void;
   'retro:vote': (payload: { cardId: string }) => void;
   'retro:close': (payload: { actionItems: string[] }) => void;

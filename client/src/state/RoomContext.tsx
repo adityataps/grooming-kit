@@ -7,6 +7,7 @@ import type {
   JoinRoomAck,
   MakeModeratorAck,
   PokerCard,
+  PokerTimerDuration,
   RenameAck,
   RetroColumnId,
   RoomState,
@@ -30,6 +31,8 @@ export interface RoomContextValue {
   pokerVote: (card: PokerCard) => void;
   pokerReveal: () => void;
   pokerReset: () => void;
+  pokerStartTimer: (durationSec: PokerTimerDuration) => void;
+  pokerCancelTimer: () => void;
   retroAddCard: (columnId: RetroColumnId, text: string) => void;
   retroVote: (cardId: string) => void;
   retroClose: (actionItems: string[]) => void;
@@ -220,6 +223,10 @@ export function RoomProvider({ children }: { children: ReactNode }) {
   }, []);
   const pokerReveal = useCallback(() => socketRef.current.emit('poker:reveal'), []);
   const pokerReset = useCallback(() => socketRef.current.emit('poker:reset'), []);
+  const pokerStartTimer = useCallback((durationSec: PokerTimerDuration) => {
+    socketRef.current.emit('poker:startTimer', { durationSec });
+  }, []);
+  const pokerCancelTimer = useCallback(() => socketRef.current.emit('poker:cancelTimer'), []);
   const retroAddCard = useCallback((columnId: RetroColumnId, text: string) => {
     socketRef.current.emit('retro:addCard', { columnId, text });
   }, []);
@@ -247,6 +254,8 @@ export function RoomProvider({ children }: { children: ReactNode }) {
     pokerVote,
     pokerReveal,
     pokerReset,
+    pokerStartTimer,
+    pokerCancelTimer,
     retroAddCard,
     retroVote,
     retroClose,

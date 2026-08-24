@@ -14,7 +14,9 @@ grooming-kit/
 │   │   ├── poker/
 │   │   │   ├── PokerRoom.tsx
 │   │   │   ├── CardDeck.tsx
-│   │   │   └── VoteBoard.tsx
+│   │   │   ├── VoteBoard.tsx
+│   │   │   ├── TimerControl.tsx   # moderator-set countdown, auto-reveals on expiry
+│   │   │   └── DistributionChart.tsx # interactive bar chart of the revealed vote spread
 │   │   ├── retro/
 │   │   │   ├── RetroRoom.tsx
 │   │   │   ├── RetroColumn.tsx
@@ -79,6 +81,9 @@ export interface BaseRoomState {
 export const POKER_DECK = ['0', '1', '2', '3', '5', '8', '13', '21', '?', '☕'] as const;
 export type PokerCard = typeof POKER_DECK[number];
 
+export const POKER_TIMER_DURATIONS = [30, 60, 90, 120] as const;
+export type PokerTimerDuration = typeof POKER_TIMER_DURATIONS[number];
+
 export interface PokerVote {
   participantId: string;
   card: PokerCard | null;   // null = not yet voted
@@ -88,6 +93,7 @@ export interface PokerRoomState extends BaseRoomState {
   type: 'poker';
   revealed: boolean;
   votes: PokerVote[];       // card is always null to non-moderator clients pre-reveal (server redacts)
+  timerEndsAt: number | null; // server epoch ms; auto-reveals the round when it elapses
 }
 ```
 
@@ -132,6 +138,8 @@ Naming convention: `<domain>:<action>`. Client→server events are imperative ("
 | `poker:vote` | C→S | `{ card: PokerCard }` | rejected if `revealed === true` |
 | `poker:reveal` | C→S | `{}` | moderator-only, validated server-side |
 | `poker:reset` | C→S | `{}` | moderator-only |
+| `poker:startTimer` | C→S | `{ durationSec: PokerTimerDuration }` | moderator-only; `durationSec` must be one of `POKER_TIMER_DURATIONS` (30/60/90/120); (re)starts a countdown owned by the server that auto-reveals the round on expiry |
+| `poker:cancelTimer` | C→S | `{}` | moderator-only; stops a running countdown without revealing |
 | `retro:addCard` | C→S | `{ columnId, text }` | any participant |
 | `retro:vote` | C→S | `{ cardId }` | toggles vote; server enforces per-participant vote cap (default 3) |
 | `retro:close` | C→S | `{ actionItems: string[] }` | moderator-only |
@@ -162,6 +170,8 @@ All server-side handlers validate: (a) socket belongs to the room, (b) moderator
 - **Theme tokens**: `client/src/index.css` defines three CSS custom-property sets (`midnight` / `warm` / `mono`) scoped via a `data-theme` attribute on `<html>`. `client/src/theme.ts` reads/writes the active theme to `localStorage` (`gk-theme`) and applies it on boot for both the main app and the sandbox — so a theme picked in `/sandbox` immediately carries over to real usage. `useTheme()` (also in `theme.ts`) is a small hook shared by every picker so they all read/write the same persisted state.
 - **Theme pickers in the real app**: `client/src/shared-ui/ThemeToggle.tsx` is a compact icon-only picker (just the three emoji, with a tooltip for the full name/blurb) rendered in the `Lobby` (before starting/joining a room) and in `RoomHeader` (visible for the whole session) — so users can switch themes both before and during an active poker/retro session, not just from the sandbox. `sandbox/ThemeSwitcher.tsx` is the larger, fully-labeled variant used only in the sandbox.
 - **Animations** (dependency-free, pure CSS + small React timers): card selection pop (`CardDeck`), a 3D flip-card reveal per vote (`VoteBoard`, staggered per participant), a confetti burst (`poker/ConfettiBurst.tsx`) triggered in `PokerRoomView` when all revealed votes match, and a vote-pop pulse on retro card votes (`RetroCard`).
+- **Moderator timer** (`poker/TimerControl.tsx`): the moderator picks a countdown (30/60/90/120s); the server owns the countdown (`PokerRoom.startTimer`, keyed off `setTimeout`) and broadcasts `timerEndsAt` (an absolute epoch ms) so every client's countdown stays in sync regardless of when it joined. On expiry the server auto-reveals the round (equivalent to the moderator clicking Reveal) and broadcasts the update; the moderator can cancel early via `poker:cancelTimer`.
+- **Distribution chart** (`poker/DistributionChart.tsx`): once revealed, renders a pure-CSS bar per `POKER_DECK` value showing how many participants landed on it; hovering/focusing a bar reveals a tooltip listing which participants voted that value. Hidden entirely pre-reveal (no data to redact — same as `VoteBoard`, it only ever renders whatever `room:state` already sent).
 - **`/sandbox`** (`client/src/sandbox/`): a client-only route (checked in `main.tsx` via `location.pathname`, no router dependency added) that renders the *real* `Lobby`, `PokerRoomView`, and `RetroRoomView` components against mock data through a hand-rolled `RoomContext.Provider` (see `mockRoomContext.ts`, `PokerSandbox.tsx`, `RetroSandbox.tsx`, `LobbySandbox.tsx`) instead of a live socket connection — fully interactive (voting/revealing/adding cards actually mutates local mock state) with zero server dependency. Also includes a small `ComponentGallery` for standalone pieces (`ParticipantList`, `RoomHeader`) and the full theme switcher. Linked from the Lobby only in dev builds (`import.meta.env.DEV`); not intended to be exposed in production hosting.
 
 ## 11. Auto-Join & Random Display Names

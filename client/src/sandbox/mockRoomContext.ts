@@ -27,6 +27,14 @@ export function mockRoomContextBase(participantId: string): Omit<
     },
     renameParticipant: async (displayName: string) => ({ ok: true, displayName }),
     makeModerator: async () => ({ ok: true }),
+    pokerStartTimer: () => {
+      // eslint-disable-next-line no-console
+      console.info('[sandbox] pokerStartTimer (no-op)');
+    },
+    pokerCancelTimer: () => {
+      // eslint-disable-next-line no-console
+      console.info('[sandbox] pokerCancelTimer (no-op)');
+    },
     dismissError: () => {},
     dismissClosed: () => {},
   };

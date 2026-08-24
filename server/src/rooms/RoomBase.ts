@@ -136,4 +136,8 @@ export abstract class RoomBase {
   }
 
   abstract toState(): RoomState;
+
+  /** Hook for subclasses holding resources (e.g. timers) that must be released when the
+   * room is removed. No-op by default. */
+  cleanup(): void {}
 }

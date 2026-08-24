@@ -21,6 +21,7 @@ export function makePokerState(): PokerRoomState {
       hasVoted: i !== 3,
       card: null,
     })),
+    timerEndsAt: null,
   };
 }
 

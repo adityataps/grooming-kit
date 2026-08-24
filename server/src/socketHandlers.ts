@@ -285,6 +285,27 @@ export function registerSocketHandlers(
     broadcastState(io, room);
   });
 
+  socket.on('poker:startTimer', (payload) => {
+    const room = getPokerRoom(socket, roomManager);
+    if (!room || !requireModerator(socket, room)) return;
+    const ok = room.startTimer(payload.durationSec, () => broadcastState(io, room));
+    if (!ok) {
+      socket.emit(
+        'error',
+        errorPayload('INVALID_ACTION', 'Could not start the timer — the round may already be revealed.')
+      );
+      return;
+    }
+    broadcastState(io, room);
+  });
+
+  socket.on('poker:cancelTimer', () => {
+    const room = getPokerRoom(socket, roomManager);
+    if (!room || !requireModerator(socket, room)) return;
+    room.cancelTimer();
+    broadcastState(io, room);
+  });
+
   socket.on('retro:addCard', (payload) => {
     const room = getRetroRoom(socket, roomManager);
     if (!room || !socket.data.participantId) return;
