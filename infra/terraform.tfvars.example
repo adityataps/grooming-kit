@@ -8,4 +8,5 @@ domain_root        = "tapshalkar.com"
 subdomain          = "grooming-kit"
 cloudflare_zone_id = "your-cloudflare-zone-id"
 github_repo        = "adityataps/grooming-kit"
+tf_state_bucket     = "your-tf-state-bucket"  # `terraform output tf_state_bucket` from bootstrap/
 artifact_keep_count = 5

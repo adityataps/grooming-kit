@@ -32,6 +32,11 @@ variable "github_repo" {
   description = "GitHub \"owner/repo\" allowed to assume the CI/CD deploy service accounts via Workload Identity Federation."
 }
 
+variable "tf_state_bucket" {
+  type        = string
+  description = "The `tf_state_bucket` output from bootstrap/ — not a secret itself, but plumbed through so github-secrets.tf can also populate the TF_STATE_BUCKET GitHub secret used by terraform-plan.yml, instead of that being the one value still copy-pasted by hand."
+}
+
 variable "artifact_keep_count" {
   type        = number
   default     = 5

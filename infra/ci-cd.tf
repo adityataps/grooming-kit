@@ -78,6 +78,20 @@ resource "google_service_account_iam_member" "backend_wif_binding" {
   member             = "principalSet://iam.googleapis.com/${google_iam_workload_identity_pool.github.name}/attribute.provider/main-deploy"
 }
 
+# backend-service.tf's google_cloud_run_v2_service.backend doesn't set an explicit
+# `template.service_account`, so it runs as the project's default compute service account.
+# `roles/run.developer` (granted above) is enough to deploy new revisions, but Cloud Run also
+# separately requires the deployer to be allowed to "act as" whatever service account the
+# revision will run as (`iam.serviceaccounts.actAs`) — without this, `gcloud run deploy` fails
+# with a PERMISSION_DENIED on that permission even though the run.developer role is in place.
+data "google_compute_default_service_account" "default" {}
+
+resource "google_service_account_iam_member" "backend_deployer_act_as_default_sa" {
+  service_account_id = data.google_compute_default_service_account.default.name
+  role               = "roles/iam.serviceAccountUser"
+  member             = "serviceAccount:${google_service_account.backend_deployer.email}"
+}
+
 # --- Optional: read-only `terraform plan` on PRs (docs/infra.md §5.3) ---
 #
 # PR-triggered workflows present a different OIDC `ref` claim (the PR's merge ref, not

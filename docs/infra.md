@@ -9,7 +9,15 @@
 > variable (default 5); and the optional `terraform-plan` workflow (§5.3) uses a **second, distinct
 > WIF provider** (not just a second service account) to structurally prevent PR-triggered plan
 > tokens from being able to impersonate the write-capable deploy service accounts — see
-> `infra/README.md`'s "Why two WIF providers" section for the full rationale.
+> `infra/README.md`'s "Why two WIF providers" section for the full rationale. All GitHub Actions
+> secrets except `CLOUDFLARE_API_TOKEN` are populated directly by `terraform apply` itself (see
+> `infra/github-secrets.tf` and the "GitHub Actions secrets" section of `infra/README.md`), via
+> the `integrations/github` provider — no more manually copy-pasting most of `terraform output`
+> into `gh secret set`. `backend-deployer` also needed an extra `roles/iam.serviceAccountUser`
+> binding on the project's default compute service account (Cloud Run's implicit runtime identity,
+> since `backend-service.tf` doesn't set an explicit `template.service_account`) — `run.developer`
+> alone deploys revisions but doesn't grant the separate "act as" permission Cloud Run checks
+> against whatever service account the revision runs as.
 
 ## 1. Overview
 
@@ -84,13 +92,14 @@ infra/
 ├── bootstrap/                    # one-time, run manually before everything else
 │   ├── main.tf                   # creates the GCS bucket used for TF remote state itself
 │   └── README.md                 # chicken-and-egg note: apply this with local state once
-├── main.tf                       # provider blocks: google, cloudflare
+├── main.tf                       # provider blocks: google, cloudflare, github
 ├── backend.tf                    # terraform { backend "gcs" { bucket = "<from bootstrap>" } }
-├── variables.tf                  # project_id, region, domain, cloudflare_zone_id, github_repo
+├── variables.tf                  # project_id, region, domain, cloudflare_zone_id, github_repo, tf_state_bucket
 ├── outputs.tf                    # Cloud Run URL, bucket name, WIF provider resource name
 ├── frontend.tf                   # GCS bucket (website config), public read IAM binding
 ├── backend-service.tf            # Artifact Registry repo + Cloud Run service + domain mapping
 ├── ci-cd.tf                      # WIF pool/provider + 2 deploy service accounts + IAM bindings
+├── github-secrets.tf             # github_actions_secret for every CI secret except CLOUDFLARE_API_TOKEN
 ├── dns.tf                        # cloudflare_record for both subdomains
 └── terraform.tfvars              # actual non-secret config values
 ```

@@ -20,27 +20,47 @@ and architecture diagram).
    export CLOUDFLARE_API_TOKEN="<token with Zone:DNS:Edit + Zone:Cache Purge:Edit>"
    ```
 
-3. **Authenticate to GCP** for local runs:
+3. **Configure GitHub auth** for local `terraform` runs, so `apply` can also populate the repo's
+   GitHub Actions secrets (see "GitHub Actions secrets" below) — a PAT with `repo` scope (or
+   fine-grained "Secrets: write" on this repo) via env var, same never-in-tfvars/state policy:
+   ```bash
+   export GITHUB_TOKEN="$(gh auth token)"   # or any other PAT with the scope above
+   ```
+
+4. **Authenticate to GCP** for local runs:
    ```bash
    gcloud auth application-default login
    ```
 
-4. **Configure variables**:
+5. **Configure variables**:
    ```bash
    cp terraform.tfvars.example terraform.tfvars   # gitignored — fill in real values
+   # tf_state_bucket = the same bucket noted in step 1
    ```
 
-5. **Init with the bootstrap bucket and apply**:
+6. **Init with the bootstrap bucket and apply**:
    ```bash
    terraform init -backend-config="bucket=<tf_state_bucket output from step 1>"
    terraform plan
    terraform apply
    ```
 
-6. After the first `apply`, set the CI secrets below from `terraform output`, and manually set
+7. After the first `apply`, set the `CLOUDFLARE_API_TOKEN` GitHub secret (the one value below
+   that Terraform deliberately does *not* manage — see `github-secrets.tf`), and manually set
    the Cloudflare SSL modes noted in `dns.tf` (not exposed via the Terraform provider).
 
-## Required GitHub Actions secrets
+## GitHub Actions secrets
+
+Every secret **except `CLOUDFLARE_API_TOKEN`** is populated automatically by `apply` via
+`github-secrets.tf` (the `integrations/github` provider — auth via a `GITHUB_TOKEN` env var, a
+PAT with `repo` scope or fine-grained "Secrets: write", same "never in tfvars/state" policy as
+the Cloudflare token). `CLOUDFLARE_API_TOKEN` stays a manual, one-time step:
+```bash
+gh secret set CLOUDFLARE_API_TOKEN --repo <owner>/<repo>
+```
+See the comment at the top of `github-secrets.tf` for why that one secret is deliberately kept
+out of Terraform (it's a live, directly-usable credential — unlike every other value below,
+which is just a resource identifier already sitting in this same state file).
 
 | Secret | Source | Used by |
 |---|---|---|
@@ -75,6 +95,17 @@ and each service account's IAM binding is scoped to that attribute — not just 
 — specifically because a plain repository-scoped binding would let *any* provider in the pool
 (including the permissive PR one) impersonate the write-capable deploy SAs. See the comments in
 `ci-cd.tf` for the full explanation.
+
+## Why `backend-deployer` also needs `roles/iam.serviceAccountUser`
+
+`backend-service.tf`'s Cloud Run service doesn't set an explicit `template.service_account`, so
+it runs as the project's default compute service account. `roles/run.developer` (granted to
+`backend-deployer` in `ci-cd.tf`) is enough to deploy new revisions, but Cloud Run separately
+requires the deployer to be allowed to *act as* whatever service account the revision runs as
+(`iam.serviceaccounts.actAs`) — without the `google_service_account_iam_member` binding on the
+default compute SA (also in `ci-cd.tf`, via the `google_compute_default_service_account` data
+source), `gcloud run deploy` fails with a `PERMISSION_DENIED` on that permission even with
+`run.developer` in place.
 
 ## Layout
 
